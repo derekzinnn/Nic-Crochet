@@ -3,10 +3,12 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { ProductView } from "@/lib/types";
 import { seedProducts } from "@/data/seed-products";
+import { swatchFromColors } from "@/lib/yarn-colors";
 
 type DbProduct = Prisma.ProductGetPayload<object>;
 
 function toView(p: DbProduct): ProductView {
+  const swatch = swatchFromColors(p.colors);
   return {
     id: p.id,
     name: p.name,
@@ -19,8 +21,9 @@ function toView(p: DbProduct): ProductView {
     status: p.status,
     tag: p.tag,
     featured: p.featured,
-    colorPrimary: p.colorPrimary,
-    colorSecondary: p.colorSecondary,
+    colors: p.colors,
+    colorPrimary: swatch.primary,
+    colorSecondary: swatch.secondary,
   };
 }
 

@@ -134,7 +134,7 @@ export default function CustomWizard() {
       </div>
       <div className="h-[5px] bg-line-divider rounded-[10px] overflow-hidden mb-[30px]">
         <div
-          className="h-full bg-sage rounded-[10px] transition-[width] duration-[400ms] ease-[cubic-bezier(.2,.8,.2,1)]"
+          className="h-full bg-sage rounded-[10px] transition-[width] [transition-duration:400ms] [transition-timing-function:cubic-bezier(.2,.8,.2,1)]"
           style={{ width: `${(step / 4) * 100}%` }}
         />
       </div>

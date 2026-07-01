@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   ADMIN_CATEGORIES,
   STATUS_OPTIONS,
@@ -10,6 +12,7 @@ import {
 } from "@/lib/product-form";
 import { brl, reaisToCents } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
+import { YARN_COLORS, swatchFromColors } from "@/lib/yarn-colors";
 import { createProduct, updateProduct } from "@/app/area-da-nic/painel/actions";
 import PhotoUploader from "@/components/admin/PhotoUploader";
 
@@ -50,6 +53,7 @@ export default function ProductWizard({
   productId?: string;
   initial: ProductDraft;
 }) {
+  const router = useRouter();
   const [draft, setDraft] = useState<ProductDraft>(initial);
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +62,14 @@ export default function ProductWizard({
   const set = <K extends keyof ProductDraft>(key: K, value: ProductDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
 
+  const toggleColor = (id: string) =>
+    setDraft((d) => ({
+      ...d,
+      colors: d.colors.includes(id) ? d.colors.filter((c) => c !== id) : [...d.colors, id],
+    }));
+
   const priceLabel = draft.priceReais ? brl(reaisToCents(draft.priceReais)) : "R$ —";
+  const swatch = swatchFromColors(draft.colors);
 
   const submit = () => {
     setError(null);
@@ -67,8 +78,12 @@ export default function ProductWizard({
         mode === "create"
           ? await createProduct(draft)
           : await updateProduct(productId!, draft);
-      // On success the action redirects; we only get here on validation failure.
-      if (res && !res.ok) setError(res.error ?? "Não foi possível salvar.");
+      if (res && res.ok) {
+        toast.success(mode === "create" ? "Bolsa publicada na loja!" : "Alterações salvas!");
+        router.push("/area-da-nic/painel");
+      } else {
+        setError(res?.error ?? "Não foi possível salvar.");
+      }
     });
   };
 
@@ -86,7 +101,7 @@ export default function ProductWizard({
         </div>
         <div className="h-[5px] bg-panel rounded-[10px] overflow-hidden mb-7">
           <div
-            className="h-full bg-sage rounded-[10px] transition-[width] duration-[400ms] ease-[cubic-bezier(.2,.8,.2,1)]"
+            className="h-full bg-sage rounded-[10px] transition-[width] [transition-duration:400ms] [transition-timing-function:cubic-bezier(.2,.8,.2,1)]"
             style={{ width: `${(step / 4) * 100}%` }}
           />
         </div>
@@ -151,29 +166,36 @@ export default function ProductWizard({
               <PhotoUploader photos={draft.photos} onChange={(photos) => set("photos", photos)} />
             </div>
 
-            <div className="text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[10px]">
-              Cores (fundo tecido quando não há foto)
+            <span className={dLabel}>Cores disponíveis (do fornecedor)</span>
+            <div className="flex flex-wrap gap-[10px] mb-1">
+              {YARN_COLORS.map((c) => {
+                const active = draft.colors.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    title={c.name}
+                    onClick={() => toggleColor(c.id)}
+                    className={`flex items-center gap-2 rounded-[30px] border pl-[6px] pr-3 py-[5px] transition-colors ${
+                      active
+                        ? "border-sage bg-sage/15 text-cream"
+                        : "border-panel-line text-cloud hover:border-sage-light"
+                    }`}
+                  >
+                    <span
+                      className="w-5 h-5 rounded-full border border-black/15"
+                      style={{ background: c.hex }}
+                    />
+                    <span className="text-[12px]">{c.name}</span>
+                  </button>
+                );
+              })}
             </div>
-            <div className="flex gap-[18px] mb-[18px] flex-wrap">
-              <label className="block">
-                <span className={dLabel}>Cor principal</span>
-                <input
-                  value={draft.colorPrimary}
-                  onChange={(e) => set("colorPrimary", e.target.value)}
-                  type="color"
-                  className="w-16 h-11 bg-panel border border-panel-line rounded-[12px] p-1 cursor-pointer"
-                />
-              </label>
-              <label className="block">
-                <span className={dLabel}>Cor secundária</span>
-                <input
-                  value={draft.colorSecondary}
-                  onChange={(e) => set("colorSecondary", e.target.value)}
-                  type="color"
-                  className="w-16 h-11 bg-panel border border-panel-line rounded-[12px] p-1 cursor-pointer"
-                />
-              </label>
-            </div>
+            <p className="mb-5 text-[12px] text-muted-soft">
+              Selecione as cores em que esta bolsa pode ser feita — só as do fornecedor. Aparecem como
+              “disponível nas cores” na loja e geram o fundo tecido quando não há foto.
+            </p>
+
             <label className="block">
               <span className={dLabel}>Selo (opcional)</span>
               <input
@@ -183,9 +205,6 @@ export default function ProductWizard({
                 className={dInput}
               />
             </label>
-            <p className="mt-[14px] text-[12px] text-muted-soft">
-              Com foto, ela aparece na loja. Sem foto, as cores viram o fundo tecido de placeholder.
-            </p>
           </div>
         )}
 
@@ -287,7 +306,7 @@ export default function ProductWizard({
         <div className="text-[11px] tracking-[0.18em] uppercase text-muted-soft mb-3">
           Pré-visualização
         </div>
-        <div className="relative aspect-[4/5] rounded-[18px] overflow-hidden">
+        <div className="relative aspect-[3/4] rounded-[18px] overflow-hidden">
           {draft.photos[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={draft.photos[0]} alt="" className="absolute inset-0 w-full h-full object-cover" />
@@ -295,7 +314,7 @@ export default function ProductWizard({
             <div
               className="absolute inset-0"
               style={{
-                background: `repeating-linear-gradient(42deg, ${draft.colorPrimary} 0 12px, ${draft.colorSecondary} 12px 24px)`,
+                background: `repeating-linear-gradient(42deg, ${swatch.primary} 0 12px, ${swatch.secondary} 12px 24px)`,
               }}
             />
           )}

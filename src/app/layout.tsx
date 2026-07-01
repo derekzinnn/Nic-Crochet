@@ -5,6 +5,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import CartDrawer from "@/components/cart/CartDrawer";
+import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/lib/config";
 
 const cormorant = Cormorant_Garamond({
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <Footer />
         <CartDrawer />
+        <Toaster />
       </body>
     </html>
   );

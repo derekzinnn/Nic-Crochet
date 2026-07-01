@@ -31,10 +31,9 @@ model Product {
   status      ProductStatus @default(AVAILABLE)
   tag         String? // optional badge, e.g. "Mais amada"
   featured    Boolean       @default(false)
-  // Fallback swatch colors (used before a real photo is uploaded, and for
-  // the cart/line-item gradient thumbnails — preserves the prototype look).
-  colorPrimary   String @default("#9AA86E")
-  colorSecondary String @default("#8B9A60")
+  // Yarn colors this bag is available in — ids from the supplier palette
+  // (src/lib/yarn-colors.ts). Also drive the woven placeholder swatch.
+  colors      String[]      @default([])
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 

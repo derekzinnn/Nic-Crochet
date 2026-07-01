@@ -38,7 +38,7 @@ export default function Nav() {
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-[90] flex items-center justify-between h-[68px] px-[clamp(18px,5vw,64px)] backdrop-blur-[12px] border-b transition-[background-color,border-color] duration-[400ms]"
+        className="fixed top-0 left-0 right-0 z-[90] flex items-center justify-between h-[68px] px-[clamp(18px,5vw,64px)] backdrop-blur-[12px] border-b transition-[background-color,border-color] [transition-duration:400ms]"
         style={{
           background: solid ? "rgba(246,242,233,.9)" : "rgba(246,242,233,0)",
           borderColor: solid ? "rgba(201,191,166,.6)" : "rgba(201,191,166,0)",

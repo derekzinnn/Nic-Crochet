@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { slugify, reaisToCents } from "@/lib/format";
+import { validYarnIds } from "@/lib/yarn-colors";
 import type { ProductDraft } from "@/lib/product-form";
 import type { ProductStatus } from "@/lib/types";
 
@@ -40,8 +40,7 @@ function normalize(draft: ProductDraft) {
     priceCents: reaisToCents(draft.priceReais),
     status: draft.status,
     featured: !!draft.featured,
-    colorPrimary: draft.colorPrimary || "#9AA86E",
-    colorSecondary: draft.colorSecondary || "#8B9A60",
+    colors: validYarnIds(draft.colors),
     tag: draft.tag.trim() || null,
     description: draft.description.trim(),
     details: draft.detailsText
@@ -67,7 +66,7 @@ export async function createProduct(draft: ProductDraft): Promise<SaveResult> {
   const slug = await uniqueSlug(data.name);
   await prisma.product.create({ data: { ...data, slug } });
   revalidateProduct(slug);
-  redirect("/area-da-nic/painel");
+  return { ok: true };
 }
 
 export async function updateProduct(id: string, draft: ProductDraft): Promise<SaveResult> {
@@ -83,7 +82,7 @@ export async function updateProduct(id: string, draft: ProductDraft): Promise<Sa
   await prisma.product.update({ where: { id }, data: { ...data, slug } });
   revalidateProduct(slug);
   revalidateProduct(existing.slug); // in case the slug changed
-  redirect("/area-da-nic/painel");
+  return { ok: true };
 }
 
 export async function deleteProduct(id: string): Promise<void> {

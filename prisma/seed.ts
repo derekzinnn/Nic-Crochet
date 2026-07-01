@@ -7,7 +7,7 @@ async function main() {
   for (const p of seedProducts) {
     await prisma.product.upsert({
       where: { slug: p.slug },
-      update: {},
+      update: { colors: p.colors },
       create: {
         name: p.name,
         slug: p.slug,
@@ -19,8 +19,7 @@ async function main() {
         status: p.status,
         tag: p.tag,
         featured: p.featured,
-        colorPrimary: p.colorPrimary,
-        colorSecondary: p.colorSecondary,
+        colors: p.colors,
       },
     });
     console.log(`✓ seeded ${p.name}`);

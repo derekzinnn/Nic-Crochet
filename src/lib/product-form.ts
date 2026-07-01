@@ -26,12 +26,11 @@ export type ProductDraft = {
   priceReais: string; // raw input, e.g. "189" or "189,90"
   status: ProductStatus;
   featured: boolean;
-  colorPrimary: string;
-  colorSecondary: string;
+  colors: string[]; // yarn color ids from the supplier palette
   tag: string;
   description: string;
   detailsText: string; // one detail per line
-  photos: string[]; // Supabase Storage URLs (Phase 6)
+  photos: string[]; // Supabase Storage URLs
 };
 
 export const emptyDraft: ProductDraft = {
@@ -40,8 +39,7 @@ export const emptyDraft: ProductDraft = {
   priceReais: "",
   status: "AVAILABLE",
   featured: false,
-  colorPrimary: "#9AA86E",
-  colorSecondary: "#8B9A60",
+  colors: [],
   tag: "",
   description: "",
   detailsText: "",
@@ -55,8 +53,7 @@ export function draftFromProduct(p: ProductView): ProductDraft {
     priceReais: centsToReais(p.priceCents),
     status: p.status,
     featured: p.featured,
-    colorPrimary: p.colorPrimary,
-    colorSecondary: p.colorSecondary,
+    colors: p.colors,
     tag: p.tag ?? "",
     description: p.description,
     detailsText: p.details.join("\n"),

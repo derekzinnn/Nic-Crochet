@@ -8,6 +8,7 @@ pixel on a production stack, and makes real the functionality the prototype fake
 
 - **Next.js 15** (App Router) · **React 19** · **TypeScript**
 - **Tailwind CSS v3** — design tokens in `tailwind.config.ts` (no scattered hex)
+- **shadcn/ui** — Sonner toasts + Skeleton loaders (`src/components/ui`, `cn`)
 - **Prisma** + **PostgreSQL** (Supabase; DB + Storage only, no Supabase Auth)
 - **Zustand** (+ persist) for the cart
 - **jose** + **bcryptjs** for admin auth (planned, Phase 5)
@@ -87,7 +88,21 @@ pixel on a production stack, and makes real the functionality the prototype fake
     set from `NEXT_PUBLIC_SUPABASE_URL`), swatch when none.
   - **Verified**: real upload to Supabase (public URL serves 200), 401 without
     auth, and `next/image` renders the uploaded photo on the product page.
-- [ ] **Phase 7 — Deploy** — PM2 + Caddy on OCI VPS, env vars, `sharp`, build seq.
+- [ ] **Phase 7 — Deploy** — user self-hosts on OCI VPS with Docker (their own
+      setup). We ship `sharp` (image opt) + `public/robots.txt`; no deploy files
+      committed per user request. Build seq: `npm ci && npm run build && npm start`.
+- [x] **Phase 8 — UX & data refinements** ✅ (post-Phase-6, per user feedback)
+  - **shadcn/ui**: Sonner `<Toaster/>` in the layout + toasts on create/edit/
+    delete/status; `Skeleton` + `loading.tsx` for colecao/produto/painel.
+  - **Supplier colors**: removed the free hex pickers. `src/lib/yarn-colors.ts`
+    is the editable palette (placeholder ~14 tons); a bag now **multi-selects**
+    available colors from it. Product detail shows "Disponível nas cores".
+    Schema: `colorPrimary/colorSecondary` → `colors String[]`; the placeholder
+    swatch is derived from the selected palette colors.
+  - **iPhone photos**: cards, product detail and wizard preview use **3:4**
+    (portrait) so iPhone shots fit with no crop.
+  - **Verified**: build clean; palette select, toasts, 3:4, available-colors,
+    create/edit/delete against live DB all working in-browser.
 
 ## Project layout
 

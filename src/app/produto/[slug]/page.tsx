@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { priceLabel } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
+import { resolveYarnColors } from "@/lib/yarn-colors";
 import ProductMedia from "@/components/product/ProductMedia";
 import AddToCartButton from "@/components/product/AddToCartButton";
 
@@ -30,6 +31,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
 
   const fromPrefix = product.category === "Custom" || product.status === "MADE_TO_ORDER";
+  const availableColors = resolveYarnColors(product.colors);
 
   return (
     <section className="relative min-h-screen px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px] bg-sand">
@@ -42,7 +44,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </Link>
 
         <div className="grid grid-cols-1 min-[721px]:grid-cols-2 bg-cream rounded-[24px] overflow-hidden shadow-[0_50px_110px_-40px_rgba(0,0,0,.5)]">
-          <div className="relative min-h-[340px] min-[721px]:min-h-full aspect-[16/10] min-[721px]:aspect-auto">
+          <div className="relative aspect-[3/4]">
             <ProductMedia
               name={product.name}
               photo={product.photos[0]}
@@ -81,6 +83,28 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     {d}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {availableColors.length > 0 && (
+              <div className="mt-6">
+                <div className="text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[10px]">
+                  Disponível nas cores
+                </div>
+                <div className="flex flex-wrap gap-[10px]">
+                  {availableColors.map((c) => (
+                    <span
+                      key={c.id}
+                      className="flex items-center gap-2 border border-line-input rounded-[30px] pl-[6px] pr-3 py-[5px]"
+                    >
+                      <span
+                        className="w-5 h-5 rounded-full border border-black/10"
+                        style={{ background: c.hex }}
+                      />
+                      <span className="text-[13px] text-muted-nav">{c.name}</span>
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 

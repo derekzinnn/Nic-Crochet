@@ -18,7 +18,7 @@ export default function ProductCard({
 
   return (
     <article className="relative group" {...(reveal ? { "data-reveal": true } : {})}>
-      <div className="relative aspect-[4/5] rounded-[18px] overflow-hidden transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:-translate-y-[6px]">
+      <div className="relative aspect-[3/4] rounded-[18px] overflow-hidden transition-transform duration-500 [transition-timing-function:cubic-bezier(.2,.7,.2,1)] group-hover:-translate-y-[6px]">
         <ProductMedia
           name={product.name}
           photo={product.photos[0]}

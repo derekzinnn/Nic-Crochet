@@ -29,6 +29,9 @@ export type ProductView = {
   status: ProductStatus;
   tag: string | null;
   featured: boolean;
+  /** Yarn color ids (from src/lib/yarn-colors.ts) this bag is available in. */
+  colors: string[];
+  /** Derived from `colors` — the woven placeholder swatch (not user-editable). */
   colorPrimary: string;
   colorSecondary: string;
 };

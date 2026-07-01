@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { ProductView, ProductStatus } from "@/lib/types";
 import { brl } from "@/lib/format";
 import { STATUS_OPTIONS } from "@/lib/product-form";
@@ -16,6 +17,7 @@ export default function ProductRow({ product }: { product: ProductView }) {
     startTransition(async () => {
       await setProductStatus(product.id, status);
       router.refresh();
+      toast.success("Status atualizado.");
     });
 
   const onDelete = () => {
@@ -23,6 +25,7 @@ export default function ProductRow({ product }: { product: ProductView }) {
     startTransition(async () => {
       await deleteProduct(product.id);
       router.refresh();
+      toast.success(`"${product.name}" foi excluída.`);
     });
   };
 

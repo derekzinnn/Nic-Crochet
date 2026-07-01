@@ -1,13 +1,15 @@
 import type { ProductView } from "@/lib/types";
+import { swatchFromColors } from "@/lib/yarn-colors";
 
 /**
- * Seed catalogue lifted verbatim from the approved design prototype.
+ * Seed catalogue lifted from the approved design prototype.
  * Used by `prisma/seed.ts` to populate the DB, and as a static fallback so the
- * site renders during the foundation phase before a live database exists.
- * Photos are intentionally empty — real photos are uploaded via the admin panel
- * (color swatches render as the placeholder, matching the prototype).
+ * site renders before a live database exists. `colors` are ids from the supplier
+ * palette (src/lib/yarn-colors.ts); the placeholder swatch is derived from them.
  */
-export const seedProducts: ProductView[] = [
+type SeedProduct = Omit<ProductView, "colorPrimary" | "colorSecondary">;
+
+const raw: SeedProduct[] = [
   {
     id: "margarida",
     name: "Bolsa Margarida",
@@ -17,8 +19,7 @@ export const seedProducts: ProductView[] = [
     tag: "Mais amada",
     featured: true,
     status: "AVAILABLE",
-    colorPrimary: "#9AA86E",
-    colorSecondary: "#8B9A60",
+    colors: ["verde-salvia", "cru"],
     description:
       "Tote estruturada em fio de algodão cru, com alça reforçada e forro interno de linho. Cabe o dia inteiro.",
     details: ["Algodão 100% natural", "Forro em linho", "Alça reforçada 60cm", "≈ 3 semanas de trabalho"],
@@ -33,8 +34,7 @@ export const seedProducts: ProductView[] = [
     tag: null,
     featured: true,
     status: "AVAILABLE",
-    colorPrimary: "#C49A6C",
-    colorSecondary: "#B98C58",
+    colors: ["caramelo", "bege"],
     description: "Bolsa transversal pequena, ponto fechado e alça ajustável. Para sair leve.",
     details: ["Algodão encerado", "Alça ajustável", "Fecho de imã", "Cores sob consulta"],
     photos: [],
@@ -48,8 +48,7 @@ export const seedProducts: ProductView[] = [
     tag: null,
     featured: true,
     status: "AVAILABLE",
-    colorPrimary: "#AEB985",
-    colorSecondary: "#97A56C",
+    colors: ["verde-salvia", "verde-oliva"],
     description: "Carteira de mão em ponto pipoca, com pegador de madeira torneada.",
     details: ["Ponto pipoca", "Pegador de madeira", "Forro acetinado", "Peça de festa"],
     photos: [],
@@ -63,8 +62,7 @@ export const seedProducts: ProductView[] = [
     tag: "Verão",
     featured: false,
     status: "AVAILABLE",
-    colorPrimary: "#D8C39B",
-    colorSecondary: "#C9AE7E",
+    colors: ["bege", "cru"],
     description: "Sacola ampla de fio de juta e algodão, vazada, perfeita para o verão.",
     details: ["Juta + algodão", "Ponto vazado", "Base reforçada", "Alças longas"],
     photos: [],
@@ -78,8 +76,7 @@ export const seedProducts: ProductView[] = [
     tag: null,
     featured: false,
     status: "AVAILABLE",
-    colorPrimary: "#B7C28E",
-    colorSecondary: "#A3B077",
+    colors: ["verde-salvia", "mostarda"],
     description: "Mini bolsa redonda com corrente dourada. Cabe o essencial e muito charme.",
     details: ["Formato redondo", "Corrente dourada", "Forro em algodão", "Tamanho compacto"],
     photos: [],
@@ -93,8 +90,7 @@ export const seedProducts: ProductView[] = [
     tag: null,
     featured: false,
     status: "AVAILABLE",
-    colorPrimary: "#9FAD72",
-    colorSecondary: "#88965B",
+    colors: ["verde-oliva", "verde-salvia"],
     description: "Bolsa saco com fechamento de cordão e franjas. Boêmia na medida certa.",
     details: ["Fechamento cordão", "Franjas tecidas", "Base circular", "Estrutura firme"],
     photos: [],
@@ -108,8 +104,7 @@ export const seedProducts: ProductView[] = [
     tag: null,
     featured: false,
     status: "AVAILABLE",
-    colorPrimary: "#C2B083",
-    colorSecondary: "#B19E6E",
+    colors: ["bege", "caramelo"],
     description: "Bolsa de ombro em ponto trançado, silhueta meia-lua bem atual.",
     details: ["Ponto trançado", "Silhueta meia-lua", "Alça curta", "Fecho oculto"],
     photos: [],
@@ -123,10 +118,14 @@ export const seedProducts: ProductView[] = [
     tag: "Você escolhe",
     featured: false,
     status: "MADE_TO_ORDER",
-    colorPrimary: "#8B9A60",
-    colorSecondary: "#6E7C48",
+    colors: ["verde-salvia", "verde-oliva"],
     description: "Do zero, do seu jeito: formato, cores e tamanho pensados com você.",
     details: ["Projeto a 4 mãos", "Cores à sua escolha", "Tamanho livre", "A partir de"],
     photos: [],
   },
 ];
+
+export const seedProducts: ProductView[] = raw.map((p) => {
+  const swatch = swatchFromColors(p.colors);
+  return { ...p, colorPrimary: swatch.primary, colorSecondary: swatch.secondary };
+});
