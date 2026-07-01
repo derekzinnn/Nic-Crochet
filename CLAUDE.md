@@ -78,7 +78,15 @@ pixel on a production stack, and makes real the functionality the prototype fake
     setStatus/toggleFeatured — `requireAdmin`, unique slug, `revalidatePath`.
   - **Verified** end-to-end against the live DB: create (appears on storefront),
     edit (price persisted), status toggle (→SOLD), delete (removed from DB).
-- [ ] **Phase 6 — Photo upload** — drag/drop → Supabase Storage, live preview.
+- [x] **Phase 6 — Photo upload** ✅
+  - `POST /api/admin/upload` route handler: auth-guarded, validates image
+    type/size (≤6 MB), uploads to the `product-photos` bucket, returns public URL.
+  - `PhotoUploader` (drag/drop + file picker, multi-file, thumbnails with
+    "Capa"/remove) drives `draft.photos` in the wizard's Aparência step; colors
+    demoted to fallback. Storefront shows photos via `next/image` (remotePatterns
+    set from `NEXT_PUBLIC_SUPABASE_URL`), swatch when none.
+  - **Verified**: real upload to Supabase (public URL serves 200), 401 without
+    auth, and `next/image` renders the uploaded photo on the product page.
 - [ ] **Phase 7 — Deploy** — PM2 + Caddy on OCI VPS, env vars, `sharp`, build seq.
 
 ## Project layout
@@ -120,8 +128,9 @@ Plus all `src/**` listed above.
 
 ## Next step
 
-**Phases 1–5 complete; live Supabase DB wired.** Nic can now register/edit/
-delete/manage bags for real from the admin panel. Admin login uses the dev
-password (`nic` / `trocar123`) — set a real one before launch via
-`npm run admin:hash`. Next: Phase 6 (photo upload → Supabase Storage bucket
-`product-photos`, already created). GitHub: `derekzinnn/Nic-Crochet` (`main`).
+**Phases 1–6 complete; live Supabase DB + Storage wired.** The whole app is
+functional: storefront, cart, custom orders, admin auth, product CRUD, and real
+photo uploads. Before launch: set a real admin password (`npm run admin:hash`)
+and swap any remaining placeholder contact values. Next & final: Phase 7 —
+deploy to the OCI VPS (PM2 + Caddy, prod env, `sharp`). GitHub:
+`derekzinnn/Nic-Crochet` (`main`).

@@ -11,6 +11,7 @@ import {
 import { brl, reaisToCents } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
 import { createProduct, updateProduct } from "@/app/area-da-nic/painel/actions";
+import PhotoUploader from "@/components/admin/PhotoUploader";
 
 const dInput =
   "w-full bg-panel border border-panel-line rounded-[12px] px-[15px] py-[13px] font-sans text-[15px] text-cream outline-none focus:border-sage";
@@ -145,6 +146,14 @@ export default function ProductWizard({
         {step === 2 && (
           <div className="animate-fadeUp">
             <h3 className="font-serif text-[24px] text-cream mb-[18px]">Aparência</h3>
+
+            <div className="mb-6">
+              <PhotoUploader photos={draft.photos} onChange={(photos) => set("photos", photos)} />
+            </div>
+
+            <div className="text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[10px]">
+              Cores (fundo tecido quando não há foto)
+            </div>
             <div className="flex gap-[18px] mb-[18px] flex-wrap">
               <label className="block">
                 <span className={dLabel}>Cor principal</span>
@@ -175,8 +184,7 @@ export default function ProductWizard({
               />
             </label>
             <p className="mt-[14px] text-[12px] text-muted-soft">
-              As cores geram o fundo tecido enquanto não há foto. O upload de fotos chega na próxima
-              etapa.
+              Com foto, ela aparece na loja. Sem foto, as cores viram o fundo tecido de placeholder.
             </p>
           </div>
         )}
