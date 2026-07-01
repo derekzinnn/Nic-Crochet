@@ -12,4 +12,11 @@ if (!password) {
 }
 
 const hash = bcrypt.hashSync(password, 10);
-console.log(hash);
+
+// Next.js's env loader expands `$`, which corrupts bcrypt hashes. Escape each
+// `$` with a backslash and paste the ESCAPED line into .env.
+const escaped = hash.replace(/\$/g, "\\$");
+
+console.log("\nRaw hash:\n" + hash);
+console.log("\nPaste this line into .env (── $ escaped for Next.js ──):");
+console.log(`ADMIN_PASSWORD_HASH="${escaped}"\n`);

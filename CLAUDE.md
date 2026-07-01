@@ -56,7 +56,18 @@ pixel on a production stack, and makes real the functionality the prototype fake
   - Success screen notifies Nic via a pre-filled `wa.me` link built from the
     request. Shared validation + message builder in `src/lib/custom-order.ts`.
   - **Verified**: all 4 steps, validation, submit, success + WhatsApp link in-browser.
-- [ ] **Phase 4 — Admin auth** — bcrypt login, signed JWT cookie, middleware guard.
+- [x] **Phase 4 — Admin auth** ✅
+  - `src/lib/session.ts` (edge-safe jose JWT sign/verify + cookie name) and
+    `src/lib/auth.ts` (bcrypt `verifyCredentials`, create/destroy/get session).
+  - `/area-da-nic` login (dark, pixel-matched) → `loginAction` server action
+    (`useActionState`); success sets an httpOnly signed cookie → `/area-da-nic/painel`.
+  - `src/middleware.ts` guards `/area-da-nic/painel/*`; dashboard shell lists
+    products with status badges + logout. Single env-configured admin.
+  - **Gotcha fixed**: `@next/env` expands `$`, corrupting bcrypt hashes — the
+    `ADMIN_PASSWORD_HASH` `$`s must be escaped as `\$` in `.env` (the `admin:hash`
+    script now prints a ready-to-paste escaped line).
+  - **Verified**: guard redirect, wrong-password error, real login, protected
+    dashboard, and logout all working in-browser.
 - [ ] **Phase 5 — Admin product CRUD** — 4-step create/edit wizard, delete,
       status toggle, dashboard list.
 - [ ] **Phase 6 — Photo upload** — drag/drop → Supabase Storage, live preview.
@@ -101,7 +112,8 @@ Plus all `src/**` listed above.
 
 ## Next step
 
-**Phases 1–3 complete.** Next: wire the live Supabase DB (fill real `.env`, run
-`npm run db:push && npm run db:seed`) to replace the seed fallback and persist
-custom orders for real, then start Phase 4 (admin auth). GitHub:
+**Phases 1–4 complete; live Supabase DB wired** (schema pushed + seeded, real
+data served). Admin login works with the dev password (`nic` / `trocar123`) —
+set a real one before launch via `npm run admin:hash`. Next: Phase 5 (admin
+product CRUD — create/edit/delete/status via the 4-step wizard). GitHub:
 `derekzinnn/Nic-Crochet` (branch `main`).
