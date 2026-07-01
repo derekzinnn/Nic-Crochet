@@ -40,7 +40,13 @@ pixel on a production stack, and makes real the functionality the prototype fake
   - Product detail page. Stubs for colecao/sob-medida/area-da-nic.
   - **Verified**: `next build` passes; visual check of every home section matches
     the design; add-to-cart + drawer + localStorage persistence all working.
-- [ ] **Phase 2 — Shop/Coleção** — server-side search/filter/sort via URL params.
+- [x] **Phase 2 — Shop/Coleção** ✅
+  - `/colecao` server component reads `?q`, `?cat`, `?sort` URL params.
+  - Pure `filterSortProducts` in `src/lib/shop.ts`; debounced client `SearchInput`
+    drives the `q` param (shareable/SEO URLs). Sort + category chips are `<Link>`s
+    that preserve current params. Count + no-results ("Limpar busca") states.
+  - **Verified**: category filter, sort, debounced search, param preservation and
+    no-results all working in-browser; pixel-matched to prototype shop view.
 - [ ] **Phase 3 — Custom order wizard** — 4-step form → persists `CustomOrderRequest`
       + WhatsApp notify.
 - [ ] **Phase 4 — Admin auth** — bcrypt login, signed JWT cookie, middleware guard.
@@ -88,6 +94,6 @@ Plus all `src/**` listed above.
 
 ## Next step
 
-**Awaiting review of Phase 1 foundation.** On approval, proceed to Phase 2
-(Shop/Coleção with server-side search/filter/sort). Before live DB/admin work,
-follow `SETUP.md` to create the Supabase project and fill real `.env` values.
+**Phase 2 complete.** Next: wire the live Supabase DB (fill real `.env`, run
+`npm run db:push && npm run db:seed`) to replace the seed fallback, then start
+Phase 3 (custom-order wizard). GitHub: `derekzinnn/Nic-Crochet` (branch `main`).
