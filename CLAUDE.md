@@ -47,8 +47,15 @@ pixel on a production stack, and makes real the functionality the prototype fake
     that preserve current params. Count + no-results ("Limpar busca") states.
   - **Verified**: category filter, sort, debounced search, param preservation and
     no-results all working in-browser; pixel-matched to prototype shop view.
-- [ ] **Phase 3 — Custom order wizard** — 4-step form → persists `CustomOrderRequest`
-      + WhatsApp notify.
+- [x] **Phase 3 — Custom order wizard** ✅
+  - `/sob-medida` 4-step client wizard (`CustomWizard.tsx`): tipo/tamanho chips →
+    cores → prazo/detalhes → contato + live resumo, with progress bar.
+  - Submit calls a server action (`sob-medida/actions.ts`) that persists
+    `CustomOrderRequest`. **Graceful**: if the DB is unreachable it still succeeds
+    and relies on the WhatsApp handoff (logged), so the customer is never blocked.
+  - Success screen notifies Nic via a pre-filled `wa.me` link built from the
+    request. Shared validation + message builder in `src/lib/custom-order.ts`.
+  - **Verified**: all 4 steps, validation, submit, success + WhatsApp link in-browser.
 - [ ] **Phase 4 — Admin auth** — bcrypt login, signed JWT cookie, middleware guard.
 - [ ] **Phase 5 — Admin product CRUD** — 4-step create/edit wizard, delete,
       status toggle, dashboard list.
@@ -94,6 +101,7 @@ Plus all `src/**` listed above.
 
 ## Next step
 
-**Phase 2 complete.** Next: wire the live Supabase DB (fill real `.env`, run
-`npm run db:push && npm run db:seed`) to replace the seed fallback, then start
-Phase 3 (custom-order wizard). GitHub: `derekzinnn/Nic-Crochet` (branch `main`).
+**Phases 1–3 complete.** Next: wire the live Supabase DB (fill real `.env`, run
+`npm run db:push && npm run db:seed`) to replace the seed fallback and persist
+custom orders for real, then start Phase 4 (admin auth). GitHub:
+`derekzinnn/Nic-Crochet` (branch `main`).
