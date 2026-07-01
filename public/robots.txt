@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /area-da-nic
+Disallow: /api/
