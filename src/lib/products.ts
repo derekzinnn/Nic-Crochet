@@ -74,3 +74,13 @@ export async function getProductBySlug(slug: string): Promise<ProductView | null
     seedProducts.find((p) => p.slug === slug) ?? null,
   );
 }
+
+export async function getProductById(id: string): Promise<ProductView | null> {
+  return withFallback(
+    async () => {
+      const p = await prisma.product.findUnique({ where: { id } });
+      return p ? toView(p) : null;
+    },
+    seedProducts.find((p) => p.id === id) ?? null,
+  );
+}

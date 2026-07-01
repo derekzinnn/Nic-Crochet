@@ -68,8 +68,16 @@ pixel on a production stack, and makes real the functionality the prototype fake
     script now prints a ready-to-paste escaped line).
   - **Verified**: guard redirect, wrong-password error, real login, protected
     dashboard, and logout all working in-browser.
-- [ ] **Phase 5 — Admin product CRUD** — 4-step create/edit wizard, delete,
-      status toggle, dashboard list.
+- [x] **Phase 5 — Admin product CRUD** ✅
+  - Dashboard (`/area-da-nic/painel`) lists all bags with inline status `<select>`,
+    Editar, Excluir (confirm), featured `★`, and a "+ Nova bolsa" button.
+  - Shared 4-step `ProductWizard` (create + edit) with a live preview panel:
+    básico (nome/categoria/preço/status/destaque) → aparência (cores/selo) →
+    descrição/detalhes → revisão. `/painel/nova` + `/painel/[id]/editar`.
+  - Auth-guarded server actions (`painel/actions.ts`): create/update/delete/
+    setStatus/toggleFeatured — `requireAdmin`, unique slug, `revalidatePath`.
+  - **Verified** end-to-end against the live DB: create (appears on storefront),
+    edit (price persisted), status toggle (→SOLD), delete (removed from DB).
 - [ ] **Phase 6 — Photo upload** — drag/drop → Supabase Storage, live preview.
 - [ ] **Phase 7 — Deploy** — PM2 + Caddy on OCI VPS, env vars, `sharp`, build seq.
 
@@ -112,8 +120,8 @@ Plus all `src/**` listed above.
 
 ## Next step
 
-**Phases 1–4 complete; live Supabase DB wired** (schema pushed + seeded, real
-data served). Admin login works with the dev password (`nic` / `trocar123`) —
-set a real one before launch via `npm run admin:hash`. Next: Phase 5 (admin
-product CRUD — create/edit/delete/status via the 4-step wizard). GitHub:
-`derekzinnn/Nic-Crochet` (branch `main`).
+**Phases 1–5 complete; live Supabase DB wired.** Nic can now register/edit/
+delete/manage bags for real from the admin panel. Admin login uses the dev
+password (`nic` / `trocar123`) — set a real one before launch via
+`npm run admin:hash`. Next: Phase 6 (photo upload → Supabase Storage bucket
+`product-photos`, already created). GitHub: `derekzinnn/Nic-Crochet` (`main`).

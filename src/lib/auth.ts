@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import type { JWTPayload } from "jose";
 import { COOKIE_NAME, SESSION_MAX_AGE, signSession, verifyToken } from "@/lib/session";
@@ -34,4 +35,11 @@ export async function getSession(): Promise<JWTPayload | null> {
   const token = (await cookies()).get(COOKIE_NAME)?.value;
   if (!token) return null;
   return verifyToken(token);
+}
+
+/** Guard for server actions/pages: redirect to login unless a valid admin session. */
+export async function requireAdmin(): Promise<JWTPayload> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") redirect("/area-da-nic");
+  return session;
 }

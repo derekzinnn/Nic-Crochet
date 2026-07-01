@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getAllProducts } from "@/lib/products";
 import { logoutAction } from "@/app/area-da-nic/actions";
-import { brl } from "@/lib/format";
-import { PRODUCT_STATUS_LABEL, type ProductStatus } from "@/lib/types";
+import ProductRow from "@/components/admin/ProductRow";
 
 export const metadata: Metadata = {
   title: "Painel",
   robots: { index: false, follow: false },
 };
 
-const STATUS_STYLE: Record<ProductStatus, string> = {
-  AVAILABLE: "bg-sage/20 text-sage-light border-sage/40",
-  SOLD: "bg-[#C06A4A]/15 text-[#E0A48C] border-[#C06A4A]/40",
-  MADE_TO_ORDER: "bg-[#C9A85B]/15 text-[#E7D79A] border-[#C9A85B]/40",
-};
+// Always render fresh so newly created/edited bags show immediately.
+export const dynamic = "force-dynamic";
 
 export default async function PainelPage() {
   const session = await getSession();
@@ -45,43 +42,30 @@ export default async function PainelPage() {
           </div>
         </div>
 
-        <div className="bg-panel-card border border-panel-line rounded-[16px] px-5 py-4 mb-6 text-[13px] text-muted-faint">
-          Cadastro, edição, exclusão e upload de fotos chegam na próxima etapa. Por ora, aqui está
-          tudo que está publicado na loja.
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+          <h2 className="font-serif text-[22px] text-cloud">Suas bolsas</h2>
+          <Link
+            href="/area-da-nic/painel/nova"
+            className="btn-pill bg-sage text-cream px-[22px] py-[12px] !text-[12px] hover:bg-sage-light"
+          >
+            + Nova bolsa
+          </Link>
         </div>
 
-        <div className="flex flex-col gap-[10px]">
-          {products.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-4 bg-panel-card border border-panel-line rounded-[14px] p-3"
-            >
-              <div
-                className="flex-none w-[54px] h-[64px] rounded-[10px] overflow-hidden bg-cover bg-center"
-                style={{
-                  background: p.photos[0]
-                    ? `center / cover no-repeat url(${p.photos[0]})`
-                    : `repeating-linear-gradient(42deg, ${p.colorPrimary} 0 8px, ${p.colorSecondary} 8px 16px)`,
-                }}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="font-serif text-[19px] text-cream truncate">{p.name}</div>
-                <div className="text-[12px] tracking-[0.12em] uppercase text-muted-soft mt-[2px]">
-                  {p.category}
-                  {p.tag ? ` · ${p.tag}` : ""}
-                </div>
-              </div>
-              <span className="text-[15px] font-semibold text-sage-light whitespace-nowrap">
-                {brl(p.priceCents)}
-              </span>
-              <span
-                className={`text-[10px] tracking-[0.1em] uppercase font-semibold px-[10px] py-[5px] rounded-[20px] border whitespace-nowrap ${STATUS_STYLE[p.status]}`}
-              >
-                {PRODUCT_STATUS_LABEL[p.status]}
-              </span>
-            </div>
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <div className="bg-panel-card border border-panel-line rounded-[16px] px-6 py-12 text-center">
+            <div className="font-serif italic text-[22px] text-cloud">Nenhuma bolsa ainda</div>
+            <p className="text-[14px] text-muted-faint mt-2">
+              Cadastre sua primeira peça para ela aparecer na loja.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-[10px]">
+            {products.map((p) => (
+              <ProductRow key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
