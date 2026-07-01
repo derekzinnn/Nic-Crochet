@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-sand text-ink font-sans antialiased;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: theme("colors.sage.DEFAULT");
+    color: theme("colors.cream");
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme("colors.sand");
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.line.scroll");
+    border-radius: 10px;
+  }
+}
+
+@layer components {
+  /* Soft pill button shared across the site */
+  .btn-pill {
+    @apply inline-flex items-center justify-center rounded-pill text-[13px] uppercase tracking-[0.12em] transition-colors cursor-pointer;
+  }
+
+  /* Scroll-reveal: elements tagged with data-reveal start hidden and are
+     revealed by the Reveal observer. Falls back to visible without JS. */
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-ready [data-reveal]:not([data-seen]) {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal-ready [data-reveal][data-seen] {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -1,0 +1,66 @@
+// Nic Crochet — data model
+// Postgres (Supabase). Run `npm run db:push` to sync, `npm run db:seed` to seed.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ProductStatus {
+  AVAILABLE // Disponível
+  SOLD // Vendida (peça única já vendida)
+  MADE_TO_ORDER // Sob encomenda
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  category    String
+  // Price stored in centavos to avoid floating-point money bugs.
+  priceCents  Int
+  description String        @default("")
+  details     String[]      @default([])
+  // Supabase Storage public URLs. First photo is the cover.
+  photos      String[]      @default([])
+  status      ProductStatus @default(AVAILABLE)
+  tag         String? // optional badge, e.g. "Mais amada"
+  featured    Boolean       @default(false)
+  // Fallback swatch colors (used before a real photo is uploaded, and for
+  // the cart/line-item gradient thumbnails — preserves the prototype look).
+  colorPrimary   String @default("#9AA86E")
+  colorSecondary String @default("#8B9A60")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([featured])
+}
+
+enum CustomOrderStatus {
+  NEW
+  RESPONDED
+  CLOSED
+}
+
+model CustomOrderRequest {
+  id        String            @id @default(cuid())
+  pieceType String // tipo de peça (Bolsa, Clutch...)
+  size      String // tamanho (Pequena, Média, Grande)
+  colors    String            @default("")
+  deadline  String            @default("") // prazo desejado (texto livre)
+  details   String            @default("")
+  name      String
+  contact   String // WhatsApp ou @instagram
+  status    CustomOrderStatus @default(NEW)
+  createdAt DateTime          @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
