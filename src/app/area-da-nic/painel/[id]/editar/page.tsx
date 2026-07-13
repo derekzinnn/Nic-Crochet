@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getProductById } from "@/lib/products";
@@ -19,16 +20,17 @@ export default async function EditarBolsaPage({ params }: { params: Promise<{ id
   if (!product) notFound();
 
   return (
-    <section className="relative min-h-screen px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px] bg-panel">
-      <div className="max-w-[920px] mx-auto">
-        <div className="mb-[30px]">
-          <div className="text-[12px] tracking-[0.28em] uppercase text-sage-light">Painel</div>
-          <h1 className="font-serif font-normal text-[clamp(30px,4vw,46px)] text-cream mt-1">
-            Editar “{product.name}”
-          </h1>
-        </div>
-        <ProductWizard mode="edit" productId={product.id} initial={draftFromProduct(product)} />
-      </div>
-    </section>
+    <div>
+      <Link
+        href="/area-da-nic/painel"
+        className="text-[13px] text-muted-soft hover:text-sage transition-colors"
+      >
+        ← Suas bolsas
+      </Link>
+      <h1 className="font-serif font-medium text-[clamp(30px,4vw,42px)] text-ink mt-2 mb-5">
+        Editar bolsa
+      </h1>
+      <ProductWizard mode="edit" productId={product.id} initial={draftFromProduct(product)} />
+    </div>
   );
 }

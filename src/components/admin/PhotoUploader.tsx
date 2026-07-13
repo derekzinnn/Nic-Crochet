@@ -63,10 +63,10 @@ export default function PhotoUploader({
           if (e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files);
         }}
         className={`w-full rounded-[14px] border border-dashed px-4 py-6 text-center transition-colors ${
-          dragOver ? "border-sage bg-sage/10" : "border-panel-line hover:border-sage-light"
+          dragOver ? "border-sage bg-sage/10" : "border-line hover:border-sage"
         }`}
       >
-        <div className="text-[14px] text-cloud">
+        <div className="text-[14px] text-ink">
           {uploading ? "Enviando..." : "Arraste fotos aqui ou clique para escolher"}
         </div>
         <div className="text-[12px] text-muted-soft mt-1">JPG, PNG ou WebP · até 6 MB cada</div>
@@ -83,14 +83,14 @@ export default function PhotoUploader({
         }}
       />
 
-      {error && <div className="mt-2 text-[13px] text-[#E0A48C]">{error}</div>}
+      {error && <div className="mt-2 text-[13px] text-[#C06A4A]">{error}</div>}
 
       {photos.length > 0 && (
         <div className="grid grid-cols-4 gap-[10px] mt-3">
           {photos.map((url, i) => (
             <div
               key={url}
-              className="relative aspect-square rounded-[10px] overflow-hidden border border-panel-line group"
+              className="relative aspect-square rounded-[10px] overflow-hidden border border-line-card group"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="w-full h-full object-cover" />

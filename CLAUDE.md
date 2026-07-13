@@ -18,8 +18,9 @@ pixel on a production stack, and makes real the functionality the prototype fake
 
 - **Routes in Portuguese** matching site copy: `/`, `/colecao`, `/produto/[slug]`,
   `/sob-medida`, `/area-da-nic` (admin). Real routes, not client state-switching.
-- **Product detail = dedicated page** (`/produto/[slug]`) not a modal — better SEO
-  & shareable links. Visual design adapted from the prototype's modal.
+- **Product detail = pop-up modal** (prototype behavior, user request): cards
+  everywhere open `ProductModal` in place — easier to browse. `/produto/[slug]`
+  is kept for SEO & shareable/direct links only (no storefront nav points to it).
 - **Money stored as integer centavos** (`priceCents`) to avoid float bugs.
 - **Cart persisted to localStorage** (Zustand persist, key `nic-crochet-cart`) —
   fixes the prototype's refresh-loses-cart bug. Checkout = WhatsApp handoff.
@@ -103,6 +104,27 @@ pixel on a production stack, and makes real the functionality the prototype fake
     (portrait) so iPhone shots fit with no crop.
   - **Verified**: build clean; palette select, toasts, 3:4, available-colors,
     create/edit/delete against live DB all working in-browser.
+- [x] **Phase 9 — Design handoff v2** ✅ (from updated `Nic Crochet.dc.html`)
+  - **Nav**: morphs into a floating pill on scroll (compact logo, links → burger),
+    burger opens a small popover menu (Coleção/Sob medida/Modo escuro/Área da Nic).
+  - **Dark mode**: `nc-dark` body class + invert filter (prototype approach),
+    persisted in localStorage, applied pre-paint by an inline script in layout.
+  - **Home**: testimonials (Reviews) section removed; "Depoimentos" links dropped.
+  - **Coleção**: sort/category chips replaced by a full-screen "Filtros" overlay
+    (sort + category + new `preco` price-range URL param), active-filter badge,
+    "N peça(s) · summary · limpar" line; SOLD pieces hidden from the shop.
+  - **Admin**: whole area now light (`#F1EDE3`, `panel` tokens repurposed), no
+    storefront chrome; sticky "Painel da Nic" bar (shared painel layout), stats
+    cards, colored status-pill selects, SOLD label → "Esgotada"; wizard reduced
+    to 3 steps (O essencial → Aparência → História & revisão) with a clickable
+    stepper — photo upload + supplier yarn colors and 3:4 preview kept.
+  - **Verified** in-browser: pill nav, popover, dark toggle + persistence,
+    filters overlay (URL params, live count, limpar), light login + painel +
+    wizard end-to-end; `next build` clean.
+  - **Product pop-up** (follow-up request): all product cards (home + coleção)
+    open the design's modal (`ProductModal` + zustand `product-modal-store`)
+    instead of navigating; add-to-bag closes it and opens the drawer; Esc/scrim/✕
+    close; `/produto/[slug]` kept for direct links.
 
 ## Project layout
 

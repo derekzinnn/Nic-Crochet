@@ -2,7 +2,7 @@ export type ProductStatus = "AVAILABLE" | "SOLD" | "MADE_TO_ORDER";
 
 export const PRODUCT_STATUS_LABEL: Record<ProductStatus, string> = {
   AVAILABLE: "Disponível",
-  SOLD: "Vendida",
+  SOLD: "Esgotada",
   MADE_TO_ORDER: "Sob encomenda",
 };
 

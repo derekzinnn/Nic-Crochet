@@ -37,10 +37,10 @@ const config: Config = {
           scroll: "#DCD4C2", // scrollbar thumb
         },
         panel: {
-          DEFAULT: "#3B3A2E", // admin page background (= ink)
-          card: "#454433", // admin cards
-          line: "#55543F", // admin borders
-          line2: "#4D4C39", // admin inner dividers
+          DEFAULT: "#F1EDE3", // admin page background (light, per redesign)
+          card: "#FFFFFF", // admin cards
+          line: "#E7E0CE", // admin borders
+          line2: "#F0EAD9", // admin inner dividers
         },
         cloud: "#E3E2CF", // light text on dark surfaces
         gold: "#C9A85B", // review stars
@@ -68,6 +68,10 @@ const config: Config = {
           from: { transform: "translateX(100%)" },
           to: { transform: "none" },
         },
+        scaleIn: {
+          from: { opacity: "0", transform: "scale(.94) translateY(-6px)" },
+          to: { opacity: "1", transform: "none" },
+        },
       },
       animation: {
         floaty: "floaty 3s ease-in-out infinite",
@@ -75,6 +79,7 @@ const config: Config = {
         fadeUp: "fadeUp .3s ease",
         modalUp: "fadeUp .45s cubic-bezier(.2,.8,.2,1)",
         drawerIn: "drawerIn .42s cubic-bezier(.2,.8,.2,1)",
+        scaleIn: "scaleIn .22s cubic-bezier(.2,.8,.2,1)",
       },
     },
   },

@@ -14,21 +14,21 @@ export default async function AreaDaNicPage() {
   if (session) redirect("/area-da-nic/painel");
 
   return (
-    <section className="relative min-h-screen px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px] bg-panel">
-      <div className="max-w-[400px] mx-auto mt-10">
-        <div className="text-center mb-[30px]">
-          <span className="inline-grid place-items-center w-[56px] h-[56px] border-[1.5px] border-sage-light rounded-full text-sage-light font-serif text-[28px] italic mb-4">
+    <section className="min-h-screen grid place-items-center bg-panel px-5 py-10">
+      <div className="w-[min(400px,100%)]">
+        <div className="text-center mb-[26px]">
+          <span className="inline-grid place-items-center w-[56px] h-[56px] border-[1.5px] border-sage rounded-full text-sage font-serif text-[28px] italic">
             n
           </span>
-          <h1 className="font-serif font-normal text-[38px] text-cream">Área da Nic</h1>
-          <p className="text-[13px] text-muted-faint mt-2">Entre para gerenciar suas bolsas.</p>
+          <h1 className="font-serif font-medium text-[36px] text-ink mt-[14px]">Área da Nic</h1>
+          <p className="text-[13px] text-muted-soft mt-[6px]">Entre para gerenciar o ateliê.</p>
         </div>
 
         <LoginForm />
 
         <Link
           href="/"
-          className="block mx-auto mt-[18px] w-fit bg-transparent text-muted-faint text-[13px] hover:text-cloud transition-colors"
+          className="block mx-auto mt-[18px] w-fit bg-transparent text-muted-soft text-[13px] hover:text-sage transition-colors"
         >
           ← Voltar ao site
         </Link>

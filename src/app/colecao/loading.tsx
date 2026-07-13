@@ -9,15 +9,12 @@ export default function Loading() {
           <Skeleton className="h-12 w-[320px] max-w-full" />
           <Skeleton className="h-4 w-[420px] max-w-full" />
         </div>
-        <div className="flex justify-center gap-2 mb-4 flex-wrap">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24 rounded-pill" />
-          ))}
+        <div className="flex justify-center gap-3 mb-4 flex-wrap">
+          <Skeleton className="h-[50px] w-[min(440px,100%)] rounded-pill" />
+          <Skeleton className="h-[50px] w-32 rounded-pill" />
         </div>
-        <div className="flex justify-center gap-2 mb-9 flex-wrap">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-8 w-20 rounded-pill" />
-          ))}
+        <div className="flex justify-center mb-9">
+          <Skeleton className="h-4 w-48" />
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-[clamp(16px,2.2vw,30px)]">
           {Array.from({ length: 8 }).map((_, i) => (

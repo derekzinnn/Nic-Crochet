@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import type { ProductView } from "@/lib/types";
 import { priceLabel } from "@/lib/format";
 import { useCart } from "@/components/cart/cart-store";
+import { useProductModal } from "@/components/product/product-modal-store";
 import ProductMedia from "@/components/product/ProductMedia";
 
 export default function ProductCard({
@@ -14,6 +14,7 @@ export default function ProductCard({
   reveal?: boolean;
 }) {
   const add = useCart((s) => s.add);
+  const openModal = useProductModal((s) => s.open);
   const fromPrefix = product.category === "Custom" || product.status === "MADE_TO_ORDER";
 
   return (
@@ -52,10 +53,13 @@ export default function ProductCard({
         {product.category}
       </div>
 
-      <Link
-        href={`/produto/${product.slug}`}
+      {/* Cards open the detail pop-up (prototype behavior); /produto/[slug]
+          stays available for direct and shared links. */}
+      <button
+        type="button"
+        onClick={() => openModal(product)}
         aria-label={product.name}
-        className="absolute inset-0 z-10"
+        className="absolute inset-0 z-10 cursor-pointer"
       />
     </article>
   );

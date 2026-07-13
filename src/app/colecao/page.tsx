@@ -3,14 +3,15 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { getAllProducts } from "@/lib/products";
 import {
-  SORT_OPTIONS,
-  SHOP_CATEGORIES,
   parseShopParams,
   filterSortProducts,
   buildShopHref,
+  filterSummary,
+  hasActiveFilters,
 } from "@/lib/shop";
 import ProductCard from "@/components/product/ProductCard";
 import SearchInput from "@/components/shop/SearchInput";
+import FiltersOverlay from "@/components/shop/FiltersOverlay";
 
 export const metadata: Metadata = {
   title: "Coleção",
@@ -30,11 +31,6 @@ export default async function ColecaoPage({
   const shown = filterSortProducts(all, params);
   const noResults = shown.length === 0;
 
-  const pillBase =
-    "btn-pill !tracking-[0.04em] normal-case px-[18px] py-[11px] !text-[12px] border";
-  const active = "bg-ink text-cream border-ink";
-  const inactive = "bg-transparent text-muted-nav border-line hover:border-sage";
-
   return (
     <section className="relative min-h-screen px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px] bg-cream">
       <div className="max-w-shell mx-auto">
@@ -50,43 +46,28 @@ export default async function ColecaoPage({
           </p>
         </div>
 
-        {/* search + sort */}
-        <div className="flex flex-wrap gap-3 items-center justify-center mb-[22px]">
+        {/* search + filters button */}
+        <div className="flex flex-wrap gap-3 items-center justify-center mb-4">
           <Suspense fallback={<div className="flex-1 min-w-[240px] max-w-[440px] h-[50px]" />}>
             <SearchInput />
           </Suspense>
-          <div className="flex gap-2 flex-wrap justify-center">
-            {SORT_OPTIONS.map((o) => (
-              <Link
-                key={o.key}
-                href={buildShopHref(params, { sort: o.key })}
-                scroll={false}
-                className={`${pillBase} ${params.sort === o.key ? active : inactive}`}
-              >
-                {o.label}
-              </Link>
-            ))}
-          </div>
+          <FiltersOverlay params={params} shownCount={shown.length} />
         </div>
 
-        {/* category chips */}
-        <div className="flex flex-wrap gap-[9px] justify-center mb-[14px]">
-          {SHOP_CATEGORIES.map((c) => (
+        {/* active filter summary */}
+        <div className="flex items-center justify-center gap-[10px] flex-wrap mb-[34px]">
+          <span className="text-[13px] text-muted-faint">
+            {shown.length} peça(s) · {filterSummary(params)}
+          </span>
+          {hasActiveFilters(params) && (
             <Link
-              key={c}
-              href={buildShopHref(params, { cat: c })}
+              href={buildShopHref(params, { cat: "Todas", sort: "destaque", preco: "todas" })}
               scroll={false}
-              className={`btn-pill px-[18px] py-[9px] !text-[12px] !tracking-[0.08em] border ${
-                params.cat === c ? active : inactive
-              }`}
+              className="text-[13px] text-sage underline"
             >
-              {c}
+              limpar
             </Link>
-          ))}
-        </div>
-
-        <div className="text-center text-[13px] text-muted-faint mb-[34px]">
-          {shown.length} peça(s) encontrada(s)
+          )}
         </div>
 
         {noResults ? (
@@ -94,7 +75,7 @@ export default async function ColecaoPage({
             <div className="font-serif italic text-[26px] text-muted">Nada encontrado por aqui</div>
             <p className="text-[14px] text-muted-soft mt-2">Tente outro nome ou limpe a busca.</p>
             <Link
-              href={buildShopHref(params, { q: "", cat: "Todas" })}
+              href="/colecao"
               scroll={false}
               className="btn-pill inline-block mt-5 bg-sage text-cream px-[26px] py-3 !text-[12px]"
             >

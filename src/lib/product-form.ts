@@ -14,10 +14,11 @@ export const ADMIN_CATEGORIES = [
 export const STATUS_OPTIONS: { value: ProductStatus; label: string }[] = [
   { value: "AVAILABLE", label: "Disponível" },
   { value: "MADE_TO_ORDER", label: "Sob encomenda" },
-  { value: "SOLD", label: "Vendida" },
+  { value: "SOLD", label: "Esgotada" },
 ];
 
-export const WIZARD_STEP_LABELS = ["Básico", "Aparência", "Descrição", "Revisão"] as const;
+/** The redesigned wizard is 3 steps: essentials → appearance → story + review. */
+export const WIZARD_STEP_LABELS = ["O essencial", "Aparência", "História"] as const;
 
 /** Editable draft shape shared by the create/edit wizard and the server action. */
 export type ProductDraft = {

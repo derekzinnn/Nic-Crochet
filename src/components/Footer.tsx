@@ -31,9 +31,6 @@ export default function Footer() {
             <Link href="/sob-medida" className="text-[#D9D8C4] text-[15px] hover:text-cream transition-colors">
               Sob medida
             </Link>
-            <Link href="/#depoimentos" className="text-[#D9D8C4] text-[15px] hover:text-cream transition-colors">
-              Depoimentos
-            </Link>
           </div>
         </div>
 

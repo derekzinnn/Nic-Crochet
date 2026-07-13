@@ -3,8 +3,10 @@ import { Cormorant_Garamond, Mulish } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import ChromeGate from "@/components/ChromeGate";
 import Reveal from "@/components/Reveal";
 import CartDrawer from "@/components/cart/CartDrawer";
+import ProductModal from "@/components/product/ProductModal";
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/lib/config";
 
@@ -43,11 +45,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${mulish.variable}`}>
       <body>
+        {/* Apply the persisted dark-mode class before first paint (no FOUC). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('nc-dark')==='1')document.body.classList.add('nc-dark')}catch(e){}`,
+          }}
+        />
         <Reveal />
         <Nav />
         <main>{children}</main>
-        <Footer />
+        <ChromeGate>
+          <Footer />
+        </ChromeGate>
         <CartDrawer />
+        <ProductModal />
         <Toaster />
       </body>
     </html>
