@@ -34,6 +34,15 @@
   body.nc-dark > * {
     filter: invert(0.94) hue-rotate(180deg) saturate(0.32) brightness(1.06);
   }
+  /* Cancel the global invert on real media so product photos keep their true
+     colors in dark mode. The child filter runs before the ancestor's, so these
+     values are the inverse of the surface filter above (double-invert ≈ original,
+     hue-rotate 180+180 = 360, and saturate/brightness compensate). */
+  body.nc-dark img,
+  body.nc-dark video,
+  body.nc-dark [data-keep-color] {
+    filter: invert(1) hue-rotate(180deg) saturate(3.125) brightness(0.943);
+  }
   body.nc-dark ::-webkit-scrollbar-track {
     background: #0f100c;
   }
