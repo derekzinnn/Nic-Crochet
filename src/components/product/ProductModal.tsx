@@ -3,10 +3,9 @@
 import { useEffect } from "react";
 import { priceLabel } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
-import { resolveYarnColors } from "@/lib/yarn-colors";
 import { useProductModal } from "@/components/product/product-modal-store";
 import ProductMedia from "@/components/product/ProductMedia";
-import AddToCartButton from "@/components/product/AddToCartButton";
+import AddToBag from "@/components/product/AddToBag";
 
 /** The design's product pop-up: image left, story right, add-to-bag below. */
 export default function ProductModal() {
@@ -29,7 +28,6 @@ export default function ProductModal() {
   if (!product) return null;
 
   const fromPrefix = product.category === "Custom" || product.status === "MADE_TO_ORDER";
-  const availableColors = resolveYarnColors(product.colors);
 
   return (
     <div className="fixed inset-0 z-[101] grid place-items-center p-[clamp(16px,4vw,48px)]">
@@ -93,29 +91,7 @@ export default function ProductModal() {
             </div>
           )}
 
-          {availableColors.length > 0 && (
-            <div className="mt-6">
-              <div className="text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[10px]">
-                Disponível nas cores
-              </div>
-              <div className="flex flex-wrap gap-[10px]">
-                {availableColors.map((c) => (
-                  <span
-                    key={c.id}
-                    className="flex items-center gap-2 border border-line-input rounded-[30px] pl-[6px] pr-3 py-[5px]"
-                  >
-                    <span
-                      className="w-5 h-5 rounded-full border border-black/10"
-                      style={{ background: c.hex }}
-                    />
-                    <span className="text-[13px] text-muted-nav">{c.name}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <AddToCartButton product={product} onAdded={close} />
+          <AddToBag product={product} onAdded={close} />
           <p className="mt-[14px] text-center text-[12px] text-muted-soft">
             Peça única · feita à mão · pode levar algumas semanas
           </p>

@@ -143,6 +143,17 @@ pixel on a production stack, and makes real the functionality the prototype fake
   - Removed dead `ComingSoon.tsx`. **Verified** in-browser (Browser pane): tabs,
     encomendas (status/WhatsApp/delete), agenda (add/toggle persisted), sob-medida
     palette, bag toggle; `tsc` + `next build` clean.
+- [x] **Phase 11 — Customer picks bag color → cart → checkout** ✅
+  - `AddToBag` component (modal + product page): MADE_TO_ORDER bags with colors
+    REQUIRE a color choice — single-select, or multi when `allowsMultipleColors`;
+    add-to-bag disabled until chosen. Other bags show colors as read-only info.
+  - Cart carries the choice: `CartItem` now keyed by `lineId` (productId + colors)
+    so the same bag in different colors is a separate line; `selectedColors` shown
+    in the drawer; persist bumped to v1 with a migrate for old carts.
+  - WhatsApp checkout lists the color, e.g. "1x Pochete — Caramelo, Bege — R$…".
+  - Card quick-add "+" opens the modal when a color is required. Removed the old
+    `AddToCartButton`. **Verified** in-browser: single + multi pickers, required-
+    color gate, cart line colors, checkout message; `tsc` + `next build` clean.
 
 ## Project layout
 

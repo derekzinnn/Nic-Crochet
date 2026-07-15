@@ -4,15 +4,17 @@ import Link from "next/link";
 import { useCart, selectCount, selectTotalCents } from "@/components/cart/cart-store";
 import { brl } from "@/lib/format";
 import { whatsappLink } from "@/lib/config";
+import { colorNames } from "@/lib/custom-order";
+import { resolveYarnColors } from "@/lib/yarn-colors";
+import type { CartItem } from "@/lib/types";
 import ProductMedia from "@/components/product/ProductMedia";
 
-function buildCheckoutMessage(
-  items: { name: string; qty: number; priceCents: number }[],
-  totalCents: number,
-): string {
-  const lines = items.map(
-    (i) => `• ${i.qty}x ${i.name} — ${brl(i.priceCents * i.qty)}`,
-  );
+function buildCheckoutMessage(items: CartItem[], totalCents: number): string {
+  const lines = items.map((i) => {
+    const cores = colorNames(i.selectedColors);
+    const name = cores ? `${i.name} — ${cores}` : i.name;
+    return `• ${i.qty}x ${name} — ${brl(i.priceCents * i.qty)}`;
+  });
   return [
     "Olá, Nic! 🌿 Quero finalizar meu pedido:",
     "",
@@ -85,7 +87,7 @@ export default function CartDrawer() {
             </div>
           ) : (
             items.map((i) => (
-              <div key={i.id} className="flex gap-[14px] py-4 border-b border-line-divider">
+              <div key={i.lineId} className="flex gap-[14px] py-4 border-b border-line-divider">
                 <div className="relative flex-none w-[70px] h-[84px] rounded-[12px] overflow-hidden">
                   <ProductMedia
                     name={i.name}
@@ -100,16 +102,31 @@ export default function CartDrawer() {
                   <div className="flex justify-between gap-[10px]">
                     <span className="font-serif text-[19px] text-ink">{i.name}</span>
                     <button
-                      onClick={() => remove(i.id)}
+                      onClick={() => remove(i.lineId)}
                       className="bg-none border-none text-[#B7AE96] text-[13px] hover:text-[#C06A4A] transition-colors"
                     >
                       remover
                     </button>
                   </div>
+                  {i.selectedColors.length > 0 && (
+                    <div className="flex items-center gap-[6px] mt-1">
+                      {resolveYarnColors(i.selectedColors).map((c) => (
+                        <span
+                          key={c.id}
+                          title={c.name}
+                          className="w-[14px] h-[14px] rounded-full border border-black/10"
+                          style={{ background: c.hex }}
+                        />
+                      ))}
+                      <span className="text-[12px] text-muted-soft">
+                        {colorNames(i.selectedColors)}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-[2px] border border-line-input rounded-[30px] overflow-hidden">
                       <button
-                        onClick={() => decrement(i.id)}
+                        onClick={() => decrement(i.lineId)}
                         aria-label="Diminuir"
                         className="w-[30px] h-[30px] bg-transparent text-muted text-[16px] hover:bg-[#F0EAD9]"
                       >
@@ -119,7 +136,7 @@ export default function CartDrawer() {
                         {i.qty}
                       </span>
                       <button
-                        onClick={() => increment(i.id)}
+                        onClick={() => increment(i.lineId)}
                         aria-label="Aumentar"
                         className="w-[30px] h-[30px] bg-transparent text-muted text-[16px] hover:bg-[#F0EAD9]"
                       >

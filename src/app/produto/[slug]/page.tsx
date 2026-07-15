@@ -4,9 +4,8 @@ import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { priceLabel } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
-import { resolveYarnColors } from "@/lib/yarn-colors";
 import ProductMedia from "@/components/product/ProductMedia";
-import AddToCartButton from "@/components/product/AddToCartButton";
+import AddToBag from "@/components/product/AddToBag";
 
 export const revalidate = 60;
 
@@ -31,7 +30,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
 
   const fromPrefix = product.category === "Custom" || product.status === "MADE_TO_ORDER";
-  const availableColors = resolveYarnColors(product.colors);
 
   return (
     <section className="relative min-h-screen px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px] bg-sand">
@@ -86,29 +84,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </div>
             )}
 
-            {availableColors.length > 0 && (
-              <div className="mt-6">
-                <div className="text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[10px]">
-                  Disponível nas cores
-                </div>
-                <div className="flex flex-wrap gap-[10px]">
-                  {availableColors.map((c) => (
-                    <span
-                      key={c.id}
-                      className="flex items-center gap-2 border border-line-input rounded-[30px] pl-[6px] pr-3 py-[5px]"
-                    >
-                      <span
-                        className="w-5 h-5 rounded-full border border-black/10"
-                        style={{ background: c.hex }}
-                      />
-                      <span className="text-[13px] text-muted-nav">{c.name}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <AddToCartButton product={product} />
+            <AddToBag product={product} />
             <p className="mt-[14px] text-center text-[12px] text-muted-soft">
               Peça única · feita à mão · pode levar algumas semanas
             </p>

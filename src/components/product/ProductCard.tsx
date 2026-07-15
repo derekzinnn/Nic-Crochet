@@ -16,6 +16,8 @@ export default function ProductCard({
   const add = useCart((s) => s.add);
   const openModal = useProductModal((s) => s.open);
   const fromPrefix = product.category === "Custom" || product.status === "MADE_TO_ORDER";
+  // Bags that need a color choice can't be quick-added — open the modal instead.
+  const needsColor = product.status === "MADE_TO_ORDER" && product.colors.length > 0;
 
   return (
     <article className="relative group" {...(reveal ? { "data-reveal": true } : {})}>
@@ -35,8 +37,10 @@ export default function ProductCard({
         )}
         <button
           type="button"
-          aria-label={`Adicionar ${product.name} à sacola`}
-          onClick={() => add(product)}
+          aria-label={
+            needsColor ? `Escolher cor de ${product.name}` : `Adicionar ${product.name} à sacola`
+          }
+          onClick={() => (needsColor ? openModal(product) : add(product))}
           className="absolute right-[14px] bottom-[14px] z-20 w-[46px] h-[46px] rounded-full bg-ink text-cream text-[22px] leading-none hover:bg-sage hover:scale-[1.08] transition-[background-color,transform] duration-300"
         >
           +

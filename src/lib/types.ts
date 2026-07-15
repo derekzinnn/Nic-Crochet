@@ -70,12 +70,16 @@ export type ProductView = {
 };
 
 export type CartItem = {
-  id: string;
+  /** Unique per line: productId + chosen colors (same bag, different colors = 2 lines). */
+  lineId: string;
+  productId: string;
   slug: string;
   name: string;
   priceCents: number;
   photo: string | null;
   colorPrimary: string;
   colorSecondary: string;
+  /** Yarn color ids the customer chose (empty when the bag has no color choice). */
+  selectedColors: string[];
   qty: number;
 };
