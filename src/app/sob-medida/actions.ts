@@ -1,10 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import {
-  validateCustomOrder,
-  type CustomOrderInput,
-} from "@/lib/custom-order";
+import { validateCustomOrder, type CustomOrderInput } from "@/lib/custom-order";
+import { validYarnIds } from "@/lib/yarn-colors";
 
 export type SubmitResult = {
   ok: boolean;
@@ -23,7 +21,7 @@ export async function submitCustomOrder(input: CustomOrderInput): Promise<Submit
       data: {
         pieceType: input.pieceType.trim(),
         size: input.size.trim(),
-        colors: input.colors.trim(),
+        colors: validYarnIds(input.colors),
         deadline: input.deadline.trim(),
         details: input.details.trim(),
         name: input.name.trim(),

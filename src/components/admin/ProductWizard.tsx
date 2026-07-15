@@ -217,10 +217,32 @@ export default function ProductWizard({
                   );
                 })}
               </div>
-              <p className="mb-5 text-[12px] text-muted-faint">
+              <p className="mb-4 text-[12px] text-muted-faint">
                 Aparecem como “disponível nas cores” na loja e pintam o cartão enquanto a foto da
                 peça não chega.
               </p>
+
+              <button
+                type="button"
+                onClick={() => set("allowsMultipleColors", !draft.allowsMultipleColors)}
+                className="flex items-center gap-3 mb-5 text-left"
+              >
+                <span
+                  className={`relative w-[42px] h-[24px] rounded-full transition-colors flex-none ${
+                    draft.allowsMultipleColors ? "bg-sage" : "bg-line-input"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-all ${
+                      draft.allowsMultipleColors ? "left-[21px]" : "left-[3px]"
+                    }`}
+                  />
+                </span>
+                <span className="text-[13px] text-muted-nav">
+                  Cliente pode escolher <strong className="text-ink">mais de uma cor</strong> ao
+                  encomendar
+                </span>
+              </button>
 
               <label className="block">
                 <span className={dLabel}>Selo (opcional)</span>

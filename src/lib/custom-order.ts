@@ -1,3 +1,5 @@
+import { resolveYarnColors } from "@/lib/yarn-colors";
+
 export const PIECE_TYPES = ["Bolsa", "Clutch", "Bucket", "Mini", "Outra"] as const;
 export const SIZES = ["Pequena", "Média", "Grande"] as const;
 export const WIZARD_STEP_LABELS = ["Peça & tamanho", "Cores", "Detalhes", "Contato"] as const;
@@ -5,7 +7,7 @@ export const WIZARD_STEP_LABELS = ["Peça & tamanho", "Cores", "Detalhes", "Cont
 export type CustomOrderInput = {
   pieceType: string;
   size: string;
-  colors: string;
+  colors: string[]; // selected yarn color ids from the supplier palette
   deadline: string;
   details: string;
   name: string;
@@ -15,12 +17,19 @@ export type CustomOrderInput = {
 export const emptyCustomOrder: CustomOrderInput = {
   pieceType: "Bolsa",
   size: "Média",
-  colors: "",
+  colors: [],
   deadline: "",
   details: "",
   name: "",
   contact: "",
 };
+
+/** Human-readable list of the selected color names, e.g. "Terracota, Cru". */
+export function colorNames(ids: string[]): string {
+  return resolveYarnColors(ids)
+    .map((c) => c.name)
+    .join(", ");
+}
 
 /** Server + client shared validation. Name and contact are required. */
 export function validateCustomOrder(input: CustomOrderInput): string | null {
@@ -32,12 +41,13 @@ export function validateCustomOrder(input: CustomOrderInput): string | null {
 
 /** Pre-filled WhatsApp message the customer sends to Nic with their request. */
 export function customOrderWhatsappMessage(input: CustomOrderInput): string {
+  const cores = colorNames(input.colors) || "a combinar";
   return [
     "Olá, Nic! 🌿 Quero encomendar uma peça sob medida:",
     "",
     `• Tipo: ${input.pieceType}`,
     `• Tamanho: ${input.size}`,
-    `• Cores: ${input.colors.trim() || "a combinar"}`,
+    `• Cores: ${cores}`,
     `• Prazo: ${input.deadline.trim() || "a combinar"}`,
     input.details.trim() ? `• Detalhes: ${input.details.trim()}` : null,
     "",

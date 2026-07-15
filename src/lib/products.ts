@@ -22,6 +22,7 @@ function toView(p: DbProduct): ProductView {
     tag: p.tag,
     featured: p.featured,
     colors: p.colors,
+    allowsMultipleColors: p.allowsMultipleColors,
     colorPrimary: swatch.primary,
     colorSecondary: swatch.secondary,
   };

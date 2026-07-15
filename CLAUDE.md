@@ -125,6 +125,24 @@ pixel on a production stack, and makes real the functionality the prototype fake
     open the design's modal (`ProductModal` + zustand `product-modal-store`)
     instead of navigating; add-to-bag closes it and opens the drawer; Esc/scrim/✕
     close; `/produto/[slug]` kept for direct links.
+- [x] **Phase 10 — Admin tabs, Encomendas & Agenda + palette colors** ✅
+  - **Painel tabs** (`PainelTabs` in the shared painel layout): Bolsas ·
+    Encomendas (with a "new" count badge) · Agenda.
+  - **Encomendas panel** (`/painel/encomendas`): lists `CustomOrderRequest`s
+    (piece/size/colors-as-swatches/deadline/details), status select
+    (Nova/Respondida/Fechada), delete, and a pre-filled "Responder no WhatsApp"
+    link to the customer. Fixes the silent order-loss gap (orders were written
+    but never read anywhere). `src/lib/admin-data.ts` reads with graceful fallback.
+  - **Agenda** (`/painel/agenda`): `Task` model — add/check-off/delete tasks with
+    optional due date (overdue highlighted) + a read-only "Encomendas em aberto"
+    list (open orders + their deadline text).
+  - **Colors are now selected, never typed**: `/sob-medida` step 2 is a palette
+    multi-select (`CustomOrderRequest.colors` String→String[]); WhatsApp msg +
+    resumo resolve names. New per-bag `Product.allowsMultipleColors` toggle in the
+    bag wizard (governs the planned per-product customer color picker).
+  - Removed dead `ComingSoon.tsx`. **Verified** in-browser (Browser pane): tabs,
+    encomendas (status/WhatsApp/delete), agenda (add/toggle persisted), sob-medida
+    palette, bag toggle; `tsc` + `next build` clean.
 
 ## Project layout
 

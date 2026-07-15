@@ -9,9 +9,11 @@ import {
   emptyCustomOrder,
   validateCustomOrder,
   customOrderWhatsappMessage,
+  colorNames,
   type CustomOrderInput,
 } from "@/lib/custom-order";
 import { whatsappLink } from "@/lib/config";
+import { YARN_COLORS } from "@/lib/yarn-colors";
 import { submitCustomOrder } from "@/app/sob-medida/actions";
 
 function Chip({
@@ -53,6 +55,12 @@ export default function CustomWizard() {
   const set = <K extends keyof CustomOrderInput>(key: K, value: CustomOrderInput[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  const toggleColor = (id: string) =>
+    setForm((f) => ({
+      ...f,
+      colors: f.colors.includes(id) ? f.colors.filter((c) => c !== id) : [...f.colors, id],
+    }));
+
   const next = () => {
     setError(null);
     setStep((s) => Math.min(4, s + 1));
@@ -83,11 +91,7 @@ export default function CustomWizard() {
     });
   };
 
-  const coresResumo = form.colors.trim()
-    ? form.colors.length > 40
-      ? form.colors.slice(0, 40) + "…"
-      : form.colors
-    : "a combinar";
+  const coresResumo = colorNames(form.colors) || "a combinar";
 
   if (sent) {
     return (
@@ -168,15 +172,32 @@ export default function CustomWizard() {
         <div className="animate-fadeUp">
           <h3 className="font-serif text-[26px] text-ink mb-[6px]">Quais cores te encantam?</h3>
           <p className="text-[14px] text-[#7C7A66] mb-5">
-            Pode citar nomes, tons ou uma vibe. A Nic combina os fios.
+            Escolha uma ou mais cores da paleta de fios da Nic.
           </p>
-          <textarea
-            value={form.colors}
-            onChange={(e) => set("colors", e.target.value)}
-            placeholder="Ex: terracota com cru, ou tons de verde sálvia, ou “algo bem clean e neutro”..."
-            rows={4}
-            className={`${inputClass} !rounded-[14px] !px-[15px] resize-y`}
-          />
+          <div className="flex flex-wrap gap-[10px]">
+            {YARN_COLORS.map((c) => {
+              const active = form.colors.includes(c.id);
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  title={c.name}
+                  onClick={() => toggleColor(c.id)}
+                  className={`flex items-center gap-2 rounded-[30px] border pl-[6px] pr-3 py-[6px] transition-colors ${
+                    active
+                      ? "border-sage bg-sage/15 text-ink"
+                      : "border-line-input text-muted-nav hover:border-sage"
+                  }`}
+                >
+                  <span
+                    className="w-5 h-5 rounded-full border border-black/10"
+                    style={{ background: c.hex }}
+                  />
+                  <span className="text-[13px]">{c.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 

@@ -34,6 +34,8 @@ model Product {
   // Yarn colors this bag is available in — ids from the supplier palette
   // (src/lib/yarn-colors.ts). Also drive the woven placeholder swatch.
   colors      String[]      @default([])
+  // Whether a customer ordering this bag may pick more than one color.
+  allowsMultipleColors Boolean @default(false)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -52,7 +54,8 @@ model CustomOrderRequest {
   id        String            @id @default(cuid())
   pieceType String // tipo de peça (Bolsa, Clutch...)
   size      String // tamanho (Pequena, Média, Grande)
-  colors    String            @default("")
+  // Selected yarn color ids from the supplier palette (customer picks, not types).
+  colors    String[]          @default([])
   deadline  String            @default("") // prazo desejado (texto livre)
   details   String            @default("")
   name      String
@@ -62,4 +65,15 @@ model CustomOrderRequest {
 
   @@index([status])
   @@index([createdAt])
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  title     String
+  done      Boolean   @default(false)
+  dueDate   DateTime? // optional deadline
+  createdAt DateTime  @default(now())
+
+  @@index([done])
+  @@index([dueDate])
 }

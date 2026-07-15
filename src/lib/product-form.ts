@@ -28,6 +28,7 @@ export type ProductDraft = {
   status: ProductStatus;
   featured: boolean;
   colors: string[]; // yarn color ids from the supplier palette
+  allowsMultipleColors: boolean; // customer may pick more than one color
   tag: string;
   description: string;
   detailsText: string; // one detail per line
@@ -41,6 +42,7 @@ export const emptyDraft: ProductDraft = {
   status: "AVAILABLE",
   featured: false,
   colors: [],
+  allowsMultipleColors: false,
   tag: "",
   description: "",
   detailsText: "",
@@ -55,6 +57,7 @@ export function draftFromProduct(p: ProductView): ProductDraft {
     status: p.status,
     featured: p.featured,
     colors: p.colors,
+    allowsMultipleColors: p.allowsMultipleColors,
     tag: p.tag ?? "",
     description: p.description,
     detailsText: p.details.join("\n"),

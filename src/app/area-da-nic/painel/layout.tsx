@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { logoutAction } from "@/app/area-da-nic/actions";
+import { getNewOrdersCount } from "@/lib/admin-data";
+import PainelTabs from "@/components/admin/PainelTabs";
 
 /** Shared admin shell: sticky "Painel da Nic" bar over a light panel background. */
-export default function PainelLayout({ children }: { children: React.ReactNode }) {
+export default async function PainelLayout({ children }: { children: React.ReactNode }) {
+  const newOrders = await getNewOrdersCount();
   return (
     <div className="min-h-screen bg-panel">
       <header className="nc-blur sticky top-0 z-50 flex items-center justify-between gap-[14px] px-[clamp(20px,4vw,40px)] h-[62px] bg-[rgba(251,248,241,.94)] backdrop-blur-[10px] border-b border-line-card">
@@ -34,7 +37,8 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      <div className="max-w-[1020px] mx-auto px-[clamp(20px,4vw,40px)] pt-[34px] pb-[90px]">
+      <div className="max-w-[1020px] mx-auto px-[clamp(20px,4vw,40px)] pt-[28px] pb-[90px]">
+        <PainelTabs newOrders={newOrders} />
         {children}
       </div>
     </div>

@@ -41,6 +41,7 @@ function normalize(draft: ProductDraft) {
     status: draft.status,
     featured: !!draft.featured,
     colors: validYarnIds(draft.colors),
+    allowsMultipleColors: !!draft.allowsMultipleColors,
     tag: draft.tag.trim() || null,
     description: draft.description.trim(),
     details: draft.detailsText
