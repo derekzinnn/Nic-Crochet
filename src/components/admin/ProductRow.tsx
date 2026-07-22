@@ -8,6 +8,7 @@ import type { ProductView, ProductStatus } from "@/lib/types";
 import { brl } from "@/lib/format";
 import { STATUS_OPTIONS } from "@/lib/product-form";
 import { deleteProduct, setProductStatus } from "@/app/area-da-nic/painel/actions";
+import ConfirmDelete from "@/components/admin/ConfirmDelete";
 
 /** Status pill colors from the design (bg / text / dot). */
 const STATUS_META: Record<ProductStatus, { bg: string; fg: string; dot: string }> = {
@@ -27,14 +28,12 @@ export default function ProductRow({ product }: { product: ProductView }) {
       toast.success("Status atualizado.");
     });
 
-  const onDelete = () => {
-    if (!confirm(`Excluir "${product.name}"? Essa ação não pode ser desfeita.`)) return;
+  const onDelete = () =>
     startTransition(async () => {
       await deleteProduct(product.id);
       router.refresh();
       toast.success(`"${product.name}" foi excluída.`);
     });
-  };
 
   const meta = STATUS_META[product.status];
 
@@ -92,14 +91,19 @@ export default function ProductRow({ product }: { product: ProductView }) {
       >
         Editar
       </Link>
-      <button
-        onClick={onDelete}
-        disabled={pending}
-        aria-label={`Excluir ${product.name}`}
-        className="flex-none text-[11px] tracking-[0.1em] uppercase text-[#B0AB94] px-[6px] py-[9px] hover:text-[#C06A4A] transition-colors disabled:opacity-50"
+      <ConfirmDelete
+        title={`Excluir “${product.name}”?`}
+        description="Essa ação não pode ser desfeita — a peça sai da loja para sempre."
+        onConfirm={onDelete}
       >
-        Excluir
-      </button>
+        <button
+          disabled={pending}
+          aria-label={`Excluir ${product.name}`}
+          className="flex-none text-[11px] tracking-[0.1em] uppercase text-[#B0AB94] px-[6px] py-[9px] hover:text-[#C06A4A] transition-colors disabled:opacity-50"
+        >
+          Excluir
+        </button>
+      </ConfirmDelete>
     </div>
   );
 }

@@ -66,7 +66,7 @@ export default function Footer() {
       </div>
 
       <div className="relative z-[2] flex justify-between flex-wrap gap-3 pt-6 text-[12px] tracking-[0.08em] text-[#8B8A76]">
-        <span>© 2026 nic crochet · feito à mão, com amor</span>
+        <span>© {new Date().getFullYear()} nic crochet · feito à mão, com amor</span>
         <span>Cada ponto, uma história.</span>
       </div>
     </footer>

@@ -11,6 +11,7 @@ import {
 import { resolveYarnColors } from "@/lib/yarn-colors";
 import { whatsappLink } from "@/lib/config";
 import { setCustomOrderStatus, deleteCustomOrder } from "@/app/area-da-nic/painel/encomendas/actions";
+import ConfirmDelete from "@/components/admin/ConfirmDelete";
 
 const STATUS_PILL: Record<CustomOrderStatus, string> = {
   NEW: "bg-sage/15 text-sage-deep border-sage/40",
@@ -43,14 +44,12 @@ export default function EncomendaRow({ order }: { order: CustomOrderView }) {
       toast.success("Status da encomenda atualizado.");
     });
 
-  const onDelete = () => {
-    if (!confirm(`Excluir a encomenda de ${order.name}?`)) return;
+  const onDelete = () =>
     startTransition(async () => {
       await deleteCustomOrder(order.id);
       router.refresh();
       toast.success("Encomenda excluída.");
     });
-  };
 
   return (
     <div
@@ -126,13 +125,18 @@ export default function EncomendaRow({ order }: { order: CustomOrderView }) {
           </a>
         )}
 
-        <button
-          onClick={onDelete}
-          disabled={pending}
-          className="ml-auto text-[12px] tracking-[0.06em] uppercase text-[#C06A4A] border border-[#C06A4A]/40 rounded-[20px] px-[14px] py-[7px] hover:bg-[#C06A4A]/10 transition-colors disabled:opacity-50"
+        <ConfirmDelete
+          title={`Excluir a encomenda de ${order.name}?`}
+          description="O pedido sai do painel para sempre. Essa ação não pode ser desfeita."
+          onConfirm={onDelete}
         >
-          Excluir
-        </button>
+          <button
+            disabled={pending}
+            className="ml-auto text-[12px] tracking-[0.06em] uppercase text-[#C06A4A] border border-[#C06A4A]/40 rounded-[20px] px-[14px] py-[7px] hover:bg-[#C06A4A]/10 transition-colors disabled:opacity-50"
+          >
+            Excluir
+          </button>
+        </ConfirmDelete>
       </div>
     </div>
   );
