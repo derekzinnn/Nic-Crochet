@@ -11,6 +11,9 @@ const supabaseHost = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  // Self-contained build output — required by the Docker deploy on the OCI VPS.
+  // Harmless locally: it only changes what `next build` emits.
+  output: "standalone",
   reactStrictMode: true,
   experimental: {
     // Client-side Router Cache: keep already-visited routes around instead of
