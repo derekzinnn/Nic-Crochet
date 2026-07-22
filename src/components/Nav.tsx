@@ -11,23 +11,6 @@ const LINKS = [
   { href: "/sob-medida", label: "Sob medida" },
 ];
 
-/** Reads/toggles the `nc-dark` body class (set before paint by layout.tsx). */
-function useDarkMode() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => setDark(document.body.classList.contains("nc-dark")), []);
-  const toggle = () => {
-    const next = !document.body.classList.contains("nc-dark");
-    document.body.classList.toggle("nc-dark", next);
-    try {
-      localStorage.setItem("nc-dark", next ? "1" : "0");
-    } catch {
-      /* private mode etc. — toggle still works for the session */
-    }
-    setDark(next);
-  };
-  return { icon: dark ? "☀" : "☾", toggle };
-}
-
 const NAV_EASE = "cubic-bezier(.2,.8,.2,1)";
 
 export default function Nav() {
@@ -37,7 +20,6 @@ export default function Nav() {
   const count = useCart(selectCount);
   const hydrated = useCart((s) => s.hydrated);
   const toggleCart = useCart((s) => s.toggle);
-  const { icon: darkIcon, toggle: toggleDark } = useDarkMode();
 
   const isHome = pathname === "/";
 
@@ -62,7 +44,7 @@ export default function Nav() {
   return (
     <>
       <nav
-        className="nc-blur fixed left-1/2 -translate-x-1/2 z-[90] flex items-center justify-between backdrop-blur-[12px] border"
+        className="fixed left-1/2 -translate-x-1/2 z-[90] flex items-center justify-between backdrop-blur-[12px] border"
         style={{
           top: scrolled ? 12 : 0,
           width: scrolled ? "min(880px, calc(100% - 28px))" : "100%",
@@ -94,14 +76,6 @@ export default function Nav() {
                   {l.label}
                 </Link>
               ))}
-              <button
-                onClick={toggleDark}
-                title="Modo escuro"
-                aria-label="Alternar modo escuro"
-                className="grid place-items-center w-[26px] h-[26px] rounded-full text-muted-soft hover:text-sage transition-colors text-[13px] p-0"
-              >
-                {darkIcon}
-              </button>
               <Link
                 href="/area-da-nic"
                 title="Área da Nic"
@@ -133,13 +107,6 @@ export default function Nav() {
 
         {/* mobile */}
         <div className="flex min-[881px]:hidden items-center gap-[10px]">
-          <button
-            onClick={toggleDark}
-            aria-label="Alternar modo escuro"
-            className="grid place-items-center w-[30px] h-[30px] text-muted-soft text-[14px] p-0"
-          >
-            {darkIcon}
-          </button>
           <button
             onClick={toggleCart}
             aria-label="Abrir sacola"
@@ -176,12 +143,6 @@ export default function Nav() {
                 {l.label}
               </Link>
             ))}
-            <button
-              onClick={toggleDark}
-              className={`${menuItem} flex items-center justify-between w-full bg-transparent border-none text-left font-sans`}
-            >
-              Modo escuro <span className="text-muted-soft text-[13px]">{darkIcon}</span>
-            </button>
             <div className="h-px bg-[#EDE6D4] mx-[10px] my-[6px]" />
             <Link href="/area-da-nic" className={`${menuItem} italic !text-sage`}>
               Área da Nic →

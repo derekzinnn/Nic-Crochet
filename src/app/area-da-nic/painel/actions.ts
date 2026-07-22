@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
+import { PRODUCTS_TAG } from "@/lib/products";
 import { slugify, reaisToCents } from "@/lib/format";
 import { validYarnIds } from "@/lib/yarn-colors";
 import type { ProductDraft } from "@/lib/product-form";
@@ -12,6 +13,9 @@ export type SaveResult = { ok: boolean; error?: string };
 
 /** Refresh every surface a product change can affect. */
 function revalidateProduct(slug?: string) {
+  // Drops the cached product queries (src/lib/products.ts) so the change is
+  // visible right away despite the data cache.
+  revalidateTag(PRODUCTS_TAG);
   revalidatePath("/");
   revalidatePath("/colecao");
   revalidatePath("/area-da-nic/painel");

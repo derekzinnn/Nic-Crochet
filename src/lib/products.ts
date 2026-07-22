@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { ProductView } from "@/lib/types";
@@ -46,37 +47,56 @@ async function withFallback<T>(query: () => Promise<T>, fallback: T): Promise<T>
   }
 }
 
+/**
+ * Product reads are cached under a shared tag so repeated renders don't hit
+ * Supabase every time. Any admin mutation calls `revalidateTag(PRODUCTS_TAG)`,
+ * so Nic's changes still show up immediately.
+ */
+export const PRODUCTS_TAG = "products";
+
+function cached<T>(keyParts: string[], fn: () => Promise<T>): () => Promise<T> {
+  return unstable_cache(fn, ["products", ...keyParts], {
+    tags: [PRODUCTS_TAG],
+    revalidate: 300,
+  });
+}
+
 export async function getAllProducts(): Promise<ProductView[]> {
   return withFallback(
-    async () => (await prisma.product.findMany({ orderBy: { createdAt: "desc" } })).map(toView),
+    cached(["all"], async () =>
+      (await prisma.product.findMany({ orderBy: { createdAt: "desc" } })).map(toView),
+    ),
     seedProducts,
   );
 }
 
 export async function getFeaturedProducts(limit = 3): Promise<ProductView[]> {
-  return withFallback(async () => {
-    const featured = await prisma.product.findMany({
-      where: { featured: true, status: { not: "SOLD" } },
-      orderBy: { createdAt: "desc" },
-      take: limit,
-    });
-    if (featured.length >= limit) return featured.map(toView);
-    // Top up with most-recent available pieces if not enough are flagged.
-    const fill = await prisma.product.findMany({
-      where: { featured: false, status: { not: "SOLD" } },
-      orderBy: { createdAt: "desc" },
-      take: limit - featured.length,
-    });
-    return [...featured, ...fill].map(toView);
-  }, seedProducts.slice(0, limit));
+  return withFallback(
+    cached(["featured", String(limit)], async () => {
+      const featured = await prisma.product.findMany({
+        where: { featured: true, status: { not: "SOLD" } },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      });
+      if (featured.length >= limit) return featured.map(toView);
+      // Top up with most-recent available pieces if not enough are flagged.
+      const fill = await prisma.product.findMany({
+        where: { featured: false, status: { not: "SOLD" } },
+        orderBy: { createdAt: "desc" },
+        take: limit - featured.length,
+      });
+      return [...featured, ...fill].map(toView);
+    }),
+    seedProducts.slice(0, limit),
+  );
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductView | null> {
   return withFallback(
-    async () => {
+    cached(["slug", slug], async () => {
       const p = await prisma.product.findUnique({ where: { slug } });
       return p ? toView(p) : null;
-    },
+    }),
     seedProducts.find((p) => p.slug === slug) ?? null,
   );
 }

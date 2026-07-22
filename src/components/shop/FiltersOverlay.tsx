@@ -147,7 +147,7 @@ export default function FiltersOverlay({
             </div>
 
             {/* sticky footer actions */}
-            <div className="nc-blur fixed left-0 right-0 bottom-0 bg-[rgba(246,242,233,.94)] backdrop-blur-[10px] border-t border-line-soft px-[clamp(20px,5vw,40px)] py-4">
+            <div className="fixed left-0 right-0 bottom-0 bg-[rgba(246,242,233,.94)] backdrop-blur-[10px] border-t border-line-soft px-[clamp(20px,5vw,40px)] py-4">
               <div className="max-w-[680px] mx-auto flex gap-3 items-center">
                 <button
                   onClick={() => apply({ cat: "Todas", sort: "destaque", preco: "todas" })}

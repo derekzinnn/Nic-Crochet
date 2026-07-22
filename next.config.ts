@@ -12,6 +12,15 @@ const supabaseHost = (() => {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Client-side Router Cache: keep already-visited routes around instead of
+    // re-fetching them on every navigation. Makes going back to the coleção,
+    // or switching admin tabs, feel instant rather than a fresh page load.
+    staleTimes: {
+      dynamic: 30, // seconds — pages with search params / force-dynamic
+      static: 300, // seconds — prerendered pages (home, product pages)
+    },
+  },
   images: {
     // Supabase Storage public bucket URLs. Host is derived from the env var so
     // it works across environments without hardcoding the project ref.

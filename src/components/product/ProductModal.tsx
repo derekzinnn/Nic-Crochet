@@ -33,7 +33,7 @@ export default function ProductModal() {
     <div className="fixed inset-0 z-[101] grid place-items-center p-[clamp(16px,4vw,48px)]">
       <div
         onClick={close}
-        className="nc-scrim absolute inset-0 bg-[rgba(40,42,28,.5)] backdrop-blur-[4px] animate-fadeUp"
+        className="absolute inset-0 bg-[rgba(40,42,28,.5)] backdrop-blur-[4px] animate-fadeUp"
       />
       <div
         role="dialog"

@@ -44,7 +44,7 @@ export default function CartDrawer() {
     <div className="fixed inset-0 z-[100]">
       <div
         onClick={close}
-        className="nc-scrim absolute inset-0 bg-[rgba(40,42,28,.42)] backdrop-blur-[3px] animate-fadeUp"
+        className="absolute inset-0 bg-[rgba(40,42,28,.42)] backdrop-blur-[3px] animate-fadeUp"
       />
       <aside className="absolute top-0 right-0 h-full w-[min(420px,92vw)] bg-cream shadow-[-30px_0_80px_-30px_rgba(0,0,0,.4)] flex flex-col animate-drawerIn">
         <div className="flex items-center justify-between px-[26px] py-6 border-b border-line-divider">

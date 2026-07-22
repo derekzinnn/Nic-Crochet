@@ -45,12 +45,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${mulish.variable}`}>
       <body>
-        {/* Apply the persisted dark-mode class before first paint (no FOUC). */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('nc-dark')==='1')document.body.classList.add('nc-dark')}catch(e){}`,
-          }}
-        />
         <Reveal />
         <Nav />
         <main>{children}</main>

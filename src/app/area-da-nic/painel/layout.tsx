@@ -8,7 +8,7 @@ export default async function PainelLayout({ children }: { children: React.React
   const newOrders = await getNewOrdersCount();
   return (
     <div className="min-h-screen bg-panel">
-      <header className="nc-blur sticky top-0 z-50 flex items-center justify-between gap-[14px] px-[clamp(20px,4vw,40px)] h-[62px] bg-[rgba(251,248,241,.94)] backdrop-blur-[10px] border-b border-line-card">
+      <header className="sticky top-0 z-50 flex items-center justify-between gap-[14px] px-[clamp(20px,4vw,40px)] h-[62px] bg-[rgba(251,248,241,.94)] backdrop-blur-[10px] border-b border-line-card">
         <div className="flex items-center gap-[10px]">
           <span className="grid place-items-center w-[34px] h-[34px] border-[1.5px] border-sage rounded-full text-sage font-serif text-[18px] italic">
             n
