@@ -7,7 +7,10 @@ import { swatchFromColors } from "@/lib/yarn-colors";
  * site renders before a live database exists. `colors` are ids from the supplier
  * palette (src/lib/yarn-colors.ts); the placeholder swatch is derived from them.
  */
-type SeedProduct = Omit<ProductView, "colorPrimary" | "colorSecondary" | "allowsMultipleColors">;
+type SeedProduct = Omit<
+  ProductView,
+  "colorPrimary" | "colorSecondary" | "allowsMultipleColors" | "leadTimeMinDays" | "leadTimeMaxDays"
+>;
 
 const raw: SeedProduct[] = [
   {
@@ -130,6 +133,8 @@ export const seedProducts: ProductView[] = raw.map((p) => {
   return {
     ...p,
     allowsMultipleColors: p.colors.length > 1,
+    leadTimeMinDays: null,
+    leadTimeMaxDays: null,
     colorPrimary: swatch.primary,
     colorSecondary: swatch.secondary,
   };

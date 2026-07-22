@@ -36,6 +36,9 @@ model Product {
   colors      String[]      @default([])
   // Whether a customer ordering this bag may pick more than one color.
   allowsMultipleColors Boolean @default(false)
+  // Delivery estimate in days (min/max). Null = not informed.
+  leadTimeMinDays Int?
+  leadTimeMaxDays Int?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 

@@ -64,6 +64,9 @@ export type ProductView = {
   colors: string[];
   /** Whether a customer ordering this bag may pick more than one color. */
   allowsMultipleColors: boolean;
+  /** Delivery estimate in days. Null when not informed. */
+  leadTimeMinDays: number | null;
+  leadTimeMaxDays: number | null;
   /** Derived from `colors` — the woven placeholder swatch (not user-editable). */
   colorPrimary: string;
   colorSecondary: string;

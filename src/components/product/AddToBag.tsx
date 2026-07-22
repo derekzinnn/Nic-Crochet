@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ProductView } from "@/lib/types";
+import { leadTimeLabel } from "@/lib/format";
 import { resolveYarnColors } from "@/lib/yarn-colors";
 import { useCart } from "@/components/cart/cart-store";
 
@@ -34,6 +35,7 @@ export default function AddToBag({
   };
 
   const canAdd = !sold && (!needsColor || selected.length > 0);
+  const prazo = leadTimeLabel(product.leadTimeMinDays, product.leadTimeMaxDays);
 
   const handleAdd = () => {
     if (!canAdd) return;
@@ -86,6 +88,15 @@ export default function AddToBag({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {prazo && (
+        <div className="mt-6 flex items-center gap-[10px] text-[14px] text-muted-nav">
+          <span className="text-[11px] tracking-[0.16em] uppercase text-muted-soft">
+            Prazo de entrega
+          </span>
+          <span className="font-medium text-ink">{prazo}</span>
         </div>
       )}
 

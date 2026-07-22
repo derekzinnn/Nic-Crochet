@@ -23,6 +23,8 @@ function toView(p: DbProduct): ProductView {
     featured: p.featured,
     colors: p.colors,
     allowsMultipleColors: p.allowsMultipleColors,
+    leadTimeMinDays: p.leadTimeMinDays,
+    leadTimeMaxDays: p.leadTimeMaxDays,
     colorPrimary: swatch.primary,
     colorSecondary: swatch.secondary,
   };

@@ -10,7 +10,7 @@ import {
   WIZARD_STEP_LABELS,
   type ProductDraft,
 } from "@/lib/product-form";
-import { brl, reaisToCents } from "@/lib/format";
+import { brl, reaisToCents, leadTimeLabel } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
 import { YARN_COLORS, swatchFromColors } from "@/lib/yarn-colors";
 import { createProduct, updateProduct } from "@/app/area-da-nic/painel/actions";
@@ -259,6 +259,49 @@ export default function ProductWizard({
           {step === 3 && (
             <div className="flex flex-col gap-4 animate-fadeUp">
               <div className="bg-white border border-line-card rounded-[18px] p-[26px]">
+                <h2 className="font-serif text-[23px] text-ink mb-1">Prazo de entrega</h2>
+                <p className="text-[13px] text-muted-soft mb-5">
+                  Em quantos dias a peça costuma ficar pronta. Aparece na loja para a cliente saber
+                  o que esperar. Deixe em branco se preferir não informar.
+                </p>
+                <div className="flex gap-4 flex-wrap">
+                  <label className="block">
+                    <span className={dLabel}>Prazo mínimo (dias)</span>
+                    <input
+                      value={draft.leadTimeMinDays}
+                      onChange={(e) => set("leadTimeMinDays", e.target.value)}
+                      inputMode="numeric"
+                      placeholder="15"
+                      className={`${dInput} w-[150px]`}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className={dLabel}>Prazo máximo (dias)</span>
+                    <input
+                      value={draft.leadTimeMaxDays}
+                      onChange={(e) => set("leadTimeMaxDays", e.target.value)}
+                      inputMode="numeric"
+                      placeholder="30"
+                      className={`${dInput} w-[150px]`}
+                    />
+                  </label>
+                </div>
+                <p className="mt-4 text-[13px] text-muted-nav">
+                  Na loja aparece como:{" "}
+                  <strong className="text-ink">
+                    {leadTimeLabel(
+                      parseInt(draft.leadTimeMinDays, 10) || null,
+                      parseInt(draft.leadTimeMaxDays, 10) || null,
+                    ) ?? "prazo não informado"}
+                  </strong>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="flex flex-col gap-4 animate-fadeUp">
+              <div className="bg-white border border-line-card rounded-[18px] p-[26px]">
                 <h2 className="font-serif text-[23px] text-ink mb-1">História da peça</h2>
                 <p className="text-[13px] text-muted-soft mb-5">
                   O texto que aparece na página da bolsa.
@@ -325,7 +368,7 @@ export default function ProductWizard({
                 ← Voltar
               </button>
             )}
-            {step < 3 && (
+            {step < 4 && (
               <button
                 type="button"
                 onClick={() => setStep((s) => s + 1)}
@@ -334,7 +377,7 @@ export default function ProductWizard({
                 Continuar →
               </button>
             )}
-            {step === 3 && (
+            {step === 4 && (
               <button
                 type="button"
                 onClick={submit}

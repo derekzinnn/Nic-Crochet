@@ -21,6 +21,20 @@ export function centsToReais(cents: number): string {
   return (cents / 100).toString();
 }
 
+/**
+ * Human delivery estimate from the min/max lead time in days.
+ * Returns null when neither is informed.
+ */
+export function leadTimeLabel(min: number | null, max: number | null): string | null {
+  const unit = (n: number) => (n === 1 ? "dia" : "dias");
+  if (min != null && max != null) {
+    return min === max ? `${min} ${unit(min)}` : `${min} a ${max} ${unit(max)}`;
+  }
+  if (min != null) return `a partir de ${min} ${unit(min)}`;
+  if (max != null) return `até ${max} ${unit(max)}`;
+  return null;
+}
+
 /** Slugify a product name into a URL-safe, accent-free slug. */
 export function slugify(name: string): string {
   return name

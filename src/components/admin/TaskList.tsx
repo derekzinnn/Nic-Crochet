@@ -10,6 +10,13 @@ function formatDue(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { timeZone: "UTC", day: "2-digit", month: "short" });
 }
 
+/** Today as yyyy-mm-dd in LOCAL time (so the year/day match what Nic sees). */
+function todayISO(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 function isOverdue(iso: string): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -20,14 +27,15 @@ export default function TaskList({ tasks }: { tasks: TaskView[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [title, setTitle] = useState("");
-  const [due, setDue] = useState("");
+  // Starts on today, so the year is always the current one (Nic só ajusta o dia).
+  const [due, setDue] = useState(todayISO());
 
   const add = () => {
     if (!title.trim()) return;
     startTransition(async () => {
       await createTask(title, due || null);
       setTitle("");
-      setDue("");
+      setDue(todayISO());
       router.refresh();
       toast.success("Tarefa adicionada.");
     });
@@ -55,13 +63,25 @@ export default function TaskList({ tasks }: { tasks: TaskView[] }) {
           placeholder="Nova tarefa — ex: terminar a Bolsa da Duda"
           className="flex-1 min-w-[220px] bg-white border border-line-input rounded-[12px] px-[15px] py-[12px] text-[15px] text-ink outline-none focus:border-sage"
         />
-        <input
-          type="date"
-          value={due}
-          onChange={(e) => setDue(e.target.value)}
-          aria-label="Prazo (opcional)"
-          className="bg-white border border-line-input rounded-[12px] px-[12px] py-[12px] text-[14px] text-muted-nav outline-none focus:border-sage"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={due}
+            onChange={(e) => setDue(e.target.value)}
+            aria-label="Prazo (opcional)"
+            className="bg-white border border-line-input rounded-[12px] px-[12px] py-[12px] text-[14px] text-muted-nav outline-none focus:border-sage"
+          />
+          {due && (
+            <button
+              type="button"
+              onClick={() => setDue("")}
+              title="Tarefa sem prazo"
+              className="text-[12px] text-muted-soft hover:text-[#C06A4A] transition-colors whitespace-nowrap"
+            >
+              sem prazo
+            </button>
+          )}
+        </div>
         <button
           onClick={add}
           disabled={pending || !title.trim()}

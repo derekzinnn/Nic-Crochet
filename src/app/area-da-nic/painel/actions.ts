@@ -33,6 +33,12 @@ async function uniqueSlug(name: string, excludeId?: string): Promise<string> {
   }
 }
 
+/** "" -> null; otherwise a non-negative whole number of days. */
+function parseDays(raw: string): number | null {
+  const n = parseInt(String(raw).replace(/\D/g, ""), 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 function normalize(draft: ProductDraft) {
   return {
     name: draft.name.trim(),
@@ -42,6 +48,8 @@ function normalize(draft: ProductDraft) {
     featured: !!draft.featured,
     colors: validYarnIds(draft.colors),
     allowsMultipleColors: !!draft.allowsMultipleColors,
+    leadTimeMinDays: parseDays(draft.leadTimeMinDays),
+    leadTimeMaxDays: parseDays(draft.leadTimeMaxDays),
     tag: draft.tag.trim() || null,
     description: draft.description.trim(),
     details: draft.detailsText
@@ -55,6 +63,10 @@ function normalize(draft: ProductDraft) {
 function validate(data: ReturnType<typeof normalize>): string | null {
   if (!data.name) return "Dê um nome para a bolsa.";
   if (data.priceCents <= 0) return "Informe um preço válido.";
+  const { leadTimeMinDays: min, leadTimeMaxDays: max } = data;
+  if (min != null && max != null && max < min) {
+    return "O prazo máximo não pode ser menor que o mínimo.";
+  }
   return null;
 }
 

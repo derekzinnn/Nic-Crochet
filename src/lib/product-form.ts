@@ -18,7 +18,7 @@ export const STATUS_OPTIONS: { value: ProductStatus; label: string }[] = [
 ];
 
 /** The redesigned wizard is 3 steps: essentials → appearance → story + review. */
-export const WIZARD_STEP_LABELS = ["O essencial", "Aparência", "História"] as const;
+export const WIZARD_STEP_LABELS = ["O essencial", "Aparência", "Prazo", "História"] as const;
 
 /** Editable draft shape shared by the create/edit wizard and the server action. */
 export type ProductDraft = {
@@ -29,6 +29,8 @@ export type ProductDraft = {
   featured: boolean;
   colors: string[]; // yarn color ids from the supplier palette
   allowsMultipleColors: boolean; // customer may pick more than one color
+  leadTimeMinDays: string; // delivery estimate, raw input in days ("" = not informed)
+  leadTimeMaxDays: string;
   tag: string;
   description: string;
   detailsText: string; // one detail per line
@@ -43,6 +45,8 @@ export const emptyDraft: ProductDraft = {
   featured: false,
   colors: [],
   allowsMultipleColors: false,
+  leadTimeMinDays: "",
+  leadTimeMaxDays: "",
   tag: "",
   description: "",
   detailsText: "",
@@ -58,6 +62,8 @@ export function draftFromProduct(p: ProductView): ProductDraft {
     featured: p.featured,
     colors: p.colors,
     allowsMultipleColors: p.allowsMultipleColors,
+    leadTimeMinDays: p.leadTimeMinDays != null ? String(p.leadTimeMinDays) : "",
+    leadTimeMaxDays: p.leadTimeMaxDays != null ? String(p.leadTimeMaxDays) : "",
     tag: p.tag ?? "",
     description: p.description,
     detailsText: p.details.join("\n"),
