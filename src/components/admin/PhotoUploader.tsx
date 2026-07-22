@@ -43,6 +43,16 @@ export default function PhotoUploader({
   const remove = (url: string) => onChange(photos.filter((p) => p !== url));
   const makeCover = (url: string) => onChange([url, ...photos.filter((p) => p !== url)]);
 
+  /** Move a photo one slot left/right — the first one is the cover. */
+  const move = (from: number, delta: number) => {
+    const to = from + delta;
+    if (to < 0 || to >= photos.length) return;
+    const next = [...photos];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    onChange(next);
+  };
+
   return (
     <div>
       <span className="block text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[7px]">
@@ -98,6 +108,30 @@ export default function PhotoUploader({
                 <span className="absolute top-1 left-1 bg-sage text-cream text-[9px] tracking-[0.1em] uppercase px-[6px] py-[2px] rounded-[10px]">
                   Capa
                 </span>
+              )}
+
+              {/* reorder arrows — first photo is the cover */}
+              {photos.length > 1 && (
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    onClick={() => move(i, -1)}
+                    disabled={i === 0}
+                    aria-label="Mover foto para trás"
+                    className="grid place-items-center w-6 h-6 rounded-full bg-cream/90 text-ink text-[14px] leading-none shadow disabled:opacity-0 hover:bg-cream"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(i, 1)}
+                    disabled={i === photos.length - 1}
+                    aria-label="Mover foto para frente"
+                    className="grid place-items-center w-6 h-6 rounded-full bg-cream/90 text-ink text-[14px] leading-none shadow disabled:opacity-0 hover:bg-cream"
+                  >
+                    ›
+                  </button>
+                </div>
               )}
               <div className="absolute inset-x-0 bottom-0 flex opacity-0 group-hover:opacity-100 transition-opacity">
                 {i !== 0 && (

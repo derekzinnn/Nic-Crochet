@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { priceLabel } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
 import { useProductModal } from "@/components/product/product-modal-store";
-import ProductMedia from "@/components/product/ProductMedia";
+import ProductGallery from "@/components/product/ProductGallery";
 import AddToBag from "@/components/product/AddToBag";
 
 /** The design's product pop-up: image left, story right, add-to-bag below. */
@@ -42,9 +42,9 @@ export default function ProductModal() {
         className="relative z-[2] w-[min(900px,100%)] max-h-[90vh] max-[880px]:max-h-[92vh] overflow-auto bg-cream rounded-[24px] shadow-[0_50px_110px_-40px_rgba(0,0,0,.5)] grid grid-cols-1 min-[881px]:grid-cols-2 animate-modalUp"
       >
         <div className="relative min-h-[200px] aspect-[16/10] min-[881px]:aspect-auto min-[881px]:min-h-[340px]">
-          <ProductMedia
+          <ProductGallery
             name={product.name}
-            photo={product.photos[0]}
+            photos={product.photos}
             colorPrimary={product.colorPrimary}
             colorSecondary={product.colorSecondary}
             variant="modal"

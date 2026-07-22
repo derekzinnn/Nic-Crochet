@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { priceLabel } from "@/lib/format";
 import { PRODUCT_STATUS_LABEL } from "@/lib/types";
-import ProductMedia from "@/components/product/ProductMedia";
+import ProductGallery from "@/components/product/ProductGallery";
 import AddToBag from "@/components/product/AddToBag";
 
 export const revalidate = 60;
@@ -43,9 +43,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         <div className="grid grid-cols-1 min-[721px]:grid-cols-2 bg-cream rounded-[24px] overflow-hidden shadow-[0_50px_110px_-40px_rgba(0,0,0,.5)]">
           <div className="relative aspect-[3/4]">
-            <ProductMedia
+            <ProductGallery
               name={product.name}
-              photo={product.photos[0]}
+              photos={product.photos}
               colorPrimary={product.colorPrimary}
               colorSecondary={product.colorSecondary}
               variant="modal"
