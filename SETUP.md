@@ -69,8 +69,15 @@ Also set `ADMIN_USERNAME` and a strong random `AUTH_SECRET`:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-> Dev default (placeholder in `.env`): user `nic`, password `trocar123`.
-> **Change before launch.**
+> The local `.env` already holds Nic's real credentials (user `nic`). The
+> password itself is never stored — only its bcrypt hash.
+>
+> **Important:** the hash's `$` characters must be escaped as `\$` in `.env`,
+> otherwise Next.js's env loader mangles it and login silently fails. The
+> `admin:hash` script prints an already-escaped, ready-to-paste line.
+>
+> **On the VPS**, copy the `ADMIN_PASSWORD_HASH` line from your local `.env`
+> (or re-run `npm run admin:hash`) into the production env — it is NOT in git.
 
 ## 5. Contact details (placeholders → real)
 
