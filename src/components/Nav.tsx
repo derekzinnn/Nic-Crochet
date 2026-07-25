@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 import { useCart, selectCount } from "@/components/cart/cart-store";
 
-const LINKS = [
+const LINKS = [{ href: "/sob-medida", label: "Sob medida" }];
+
+const COLLECTION_LINKS = [
   { href: "/colecao", label: "Bolsas" },
   { href: "/roupas", label: "Roupas" },
-  { href: "/sob-medida", label: "Sob medida" },
 ];
 
 const NAV_EASE = "cubic-bezier(.2,.8,.2,1)";
@@ -18,6 +19,7 @@ export default function Nav() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [colMenu, setColMenu] = useState(false);
   const count = useCart(selectCount);
   const hydrated = useCart((s) => s.hydrated);
   const toggleCart = useCart((s) => s.toggle);
@@ -31,8 +33,11 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close the menu popover whenever the route changes.
-  useEffect(() => setMenuOpen(false), [pathname]);
+  // Close the popovers whenever the route changes.
+  useEffect(() => {
+    setMenuOpen(false);
+    setColMenu(false);
+  }, [pathname]);
 
   // The admin area has its own shell — no storefront chrome.
   if (pathname.startsWith("/area-da-nic")) return null;
@@ -68,6 +73,36 @@ export default function Nav() {
         <div className="hidden min-[881px]:flex items-center gap-[clamp(14px,2vw,30px)]">
           {!scrolled && (
             <div className="flex items-center gap-[clamp(16px,2.4vw,36px)]">
+              <div className="relative">
+                <button
+                  onClick={() => setColMenu((o) => !o)}
+                  className="flex items-center gap-[6px] text-[13px] tracking-[0.08em] uppercase text-muted-nav hover:text-sage transition-colors"
+                >
+                  Coleção
+                  <span
+                    className={`text-[9px] transition-transform ${colMenu ? "rotate-180" : ""}`}
+                  >
+                    ▾
+                  </span>
+                </button>
+                {colMenu && (
+                  <>
+                    <div className="fixed inset-0 z-[94]" onClick={() => setColMenu(false)} />
+                    <div className="absolute top-full left-0 mt-3 z-[95] w-[150px] bg-cream border border-line-soft rounded-[14px] shadow-[0_20px_50px_-24px_rgba(59,58,46,.4)] p-2 animate-scaleIn origin-top-left">
+                      {COLLECTION_LINKS.map((l) => (
+                        <Link
+                          key={l.href}
+                          href={l.href}
+                          onClick={() => setColMenu(false)}
+                          className={menuItem}
+                        >
+                          {l.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               {LINKS.map((l) => (
                 <Link
                   key={l.href}
@@ -139,6 +174,15 @@ export default function Nav() {
               right: scrolled ? "max(24px, calc(50% - 430px))" : "clamp(18px,5vw,64px)",
             }}
           >
+            <div className="px-[14px] pt-1 pb-[2px] text-[10px] tracking-[0.2em] uppercase text-muted-soft">
+              Coleção
+            </div>
+            {COLLECTION_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} className={menuItem}>
+                {l.label}
+              </Link>
+            ))}
+            <div className="h-px bg-[#EDE6D4] mx-[10px] my-[6px]" />
             {LINKS.map((l) => (
               <Link key={l.href} href={l.href} className={menuItem}>
                 {l.label}

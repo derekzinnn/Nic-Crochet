@@ -10,6 +10,7 @@ import {
 import ProductCard from "@/components/product/ProductCard";
 import SearchInput from "@/components/shop/SearchInput";
 import FiltersOverlay from "@/components/shop/FiltersOverlay";
+import CollectionSwitch from "@/components/shop/CollectionSwitch";
 
 /** The shared shop UI, used by /colecao (bags) and /roupas (clothing). */
 export default function CollectionView({
@@ -98,6 +99,8 @@ export default function CollectionView({
           </div>
         )}
       </div>
+
+      <CollectionSwitch />
     </section>
   );
 }
