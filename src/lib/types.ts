@@ -1,5 +1,12 @@
 export type ProductStatus = "AVAILABLE" | "SOLD" | "MADE_TO_ORDER";
 
+export type ProductKind = "BAG" | "CLOTHING";
+
+export const KIND_LABEL: Record<ProductKind, string> = {
+  BAG: "Bolsa",
+  CLOTHING: "Roupa",
+};
+
 export const PRODUCT_STATUS_LABEL: Record<ProductStatus, string> = {
   AVAILABLE: "Disponível",
   SOLD: "Esgotada",
@@ -60,7 +67,10 @@ export type ProductView = {
   status: ProductStatus;
   tag: string | null;
   featured: boolean;
-  /** Yarn color ids (from src/lib/yarn-colors.ts) this bag is available in. */
+  kind: ProductKind;
+  /** Available sizes for clothing (e.g. ["P","M","G"]); empty for bags. */
+  sizes: string[];
+  /** Yarn color ids (from src/lib/yarn-colors.ts) this piece is available in. */
   colors: string[];
   /** Whether a customer ordering this bag may pick more than one color. */
   allowsMultipleColors: boolean;
@@ -82,7 +92,9 @@ export type CartItem = {
   photo: string | null;
   colorPrimary: string;
   colorSecondary: string;
-  /** Yarn color ids the customer chose (empty when the bag has no color choice). */
+  /** Yarn color ids the customer chose (empty when the piece has no color choice). */
   selectedColors: string[];
+  /** Size the customer chose (clothing); null for bags / no size. */
+  selectedSize: string | null;
   qty: number;
 };

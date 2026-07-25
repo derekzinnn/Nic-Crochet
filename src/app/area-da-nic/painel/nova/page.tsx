@@ -6,7 +6,7 @@ import { emptyDraft } from "@/lib/product-form";
 import ProductWizard from "@/components/admin/ProductWizard";
 
 export const metadata: Metadata = {
-  title: "Nova bolsa",
+  title: "Nova peça",
   robots: { index: false, follow: false },
 };
 
@@ -20,10 +20,10 @@ export default async function NovaBolsaPage() {
         href="/area-da-nic/painel"
         className="text-[13px] text-muted-soft hover:text-sage transition-colors"
       >
-        ← Suas bolsas
+        ← Suas peças
       </Link>
       <h1 className="font-serif font-medium text-[clamp(30px,4vw,42px)] text-ink mt-2 mb-5">
-        Nova bolsa
+        Nova peça
       </h1>
       <ProductWizard mode="create" initial={emptyDraft} />
     </div>

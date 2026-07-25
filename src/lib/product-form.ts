@@ -1,8 +1,8 @@
-import type { ProductStatus, ProductView } from "@/lib/types";
+import type { ProductKind, ProductStatus, ProductView } from "@/lib/types";
 import { centsToReais } from "@/lib/format";
 
-/** Categories offered in the admin wizard (matches the prototype's chips). */
-export const ADMIN_CATEGORIES = [
+/** Bag categories offered in the admin wizard (matches the prototype's chips). */
+export const BAG_CATEGORIES = [
   "Tote",
   "Transversal",
   "Clutch",
@@ -10,6 +10,28 @@ export const ADMIN_CATEGORIES = [
   "Ombro",
   "Mini",
 ] as const;
+
+/** Clothing categories — editable starter list; adjust to Nic's real catalog. */
+export const CLOTHING_CATEGORIES = [
+  "Top",
+  "Cropped",
+  "Blusa",
+  "Vestido",
+  "Saída de praia",
+  "Conjunto",
+  "Outra",
+] as const;
+
+/** Available clothing sizes (Nic marks which ones a piece has). */
+export const CLOTHING_SIZES = ["P", "M", "G"] as const;
+
+/** Categories for a given kind. */
+export function categoriesForKind(kind: ProductKind): readonly string[] {
+  return kind === "CLOTHING" ? CLOTHING_CATEGORIES : BAG_CATEGORIES;
+}
+
+/** Back-compat alias — bag categories. */
+export const ADMIN_CATEGORIES = BAG_CATEGORIES;
 
 export const STATUS_OPTIONS: { value: ProductStatus; label: string }[] = [
   { value: "AVAILABLE", label: "Disponível" },
@@ -23,7 +45,9 @@ export const WIZARD_STEP_LABELS = ["O essencial", "Aparência", "Prazo", "Histó
 /** Editable draft shape shared by the create/edit wizard and the server action. */
 export type ProductDraft = {
   name: string;
+  kind: ProductKind;
   category: string;
+  sizes: string[]; // clothing sizes (empty for bags)
   priceReais: string; // raw input, e.g. "189" or "189,90"
   status: ProductStatus;
   featured: boolean;
@@ -39,7 +63,9 @@ export type ProductDraft = {
 
 export const emptyDraft: ProductDraft = {
   name: "",
+  kind: "BAG",
   category: "Tote",
+  sizes: [],
   priceReais: "",
   status: "AVAILABLE",
   featured: false,
@@ -56,7 +82,9 @@ export const emptyDraft: ProductDraft = {
 export function draftFromProduct(p: ProductView): ProductDraft {
   return {
     name: p.name,
+    kind: p.kind,
     category: p.category,
+    sizes: p.sizes,
     priceReais: centsToReais(p.priceCents),
     status: p.status,
     featured: p.featured,

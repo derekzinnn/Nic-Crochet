@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/auth";
 import { PRODUCTS_TAG } from "@/lib/products";
 import { slugify, reaisToCents } from "@/lib/format";
 import { validYarnIds } from "@/lib/yarn-colors";
-import type { ProductDraft } from "@/lib/product-form";
+import { categoriesForKind, CLOTHING_SIZES, type ProductDraft } from "@/lib/product-form";
 import type { ProductStatus } from "@/lib/types";
 
 export type SaveResult = { ok: boolean; error?: string };
@@ -44,9 +44,19 @@ function parseDays(raw: string): number | null {
 }
 
 function normalize(draft: ProductDraft) {
+  const kind = draft.kind === "CLOTHING" ? "CLOTHING" : "BAG";
+  const validCats = categoriesForKind(kind);
+  const category = validCats.includes(draft.category) ? draft.category : validCats[0];
+  // Sizes only apply to clothing, and only the known grade.
+  const sizes =
+    kind === "CLOTHING"
+      ? (CLOTHING_SIZES as readonly string[]).filter((s) => draft.sizes.includes(s))
+      : [];
   return {
     name: draft.name.trim(),
-    category: draft.category.trim() || "Tote",
+    kind: kind as "BAG" | "CLOTHING",
+    category,
+    sizes,
     priceCents: reaisToCents(draft.priceReais),
     status: draft.status,
     featured: !!draft.featured,
@@ -65,7 +75,8 @@ function normalize(draft: ProductDraft) {
 }
 
 function validate(data: ReturnType<typeof normalize>): string | null {
-  if (!data.name) return "Dê um nome para a bolsa.";
+  const noun = data.kind === "CLOTHING" ? "a roupa" : "a bolsa";
+  if (!data.name) return `Dê um nome para ${noun}.`;
   if (data.priceCents <= 0) return "Informe um preço válido.";
   const { leadTimeMinDays: min, leadTimeMaxDays: max } = data;
   if (min != null && max != null && max < min) {

@@ -17,11 +17,19 @@ enum ProductStatus {
   MADE_TO_ORDER // Sob encomenda
 }
 
+enum ProductKind {
+  BAG // Bolsa
+  CLOTHING // Roupa
+}
+
 model Product {
   id          String        @id @default(cuid())
   name        String
   slug        String        @unique
+  kind        ProductKind   @default(BAG)
   category    String
+  // Available sizes for clothing (e.g. ["P","M","G"]). Empty for bags.
+  sizes       String[]      @default([])
   // Price stored in centavos to avoid floating-point money bugs.
   priceCents  Int
   description String        @default("")
@@ -42,6 +50,7 @@ model Product {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  @@index([kind])
   @@index([category])
   @@index([status])
   @@index([featured])

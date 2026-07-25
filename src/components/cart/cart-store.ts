@@ -11,16 +11,16 @@ type CartState = {
   open: () => void;
   close: () => void;
   toggle: () => void;
-  add: (product: ProductView, selectedColors?: string[]) => void;
+  add: (product: ProductView, selectedColors?: string[], selectedSize?: string | null) => void;
   increment: (lineId: string) => void;
   decrement: (lineId: string) => void;
   remove: (lineId: string) => void;
   clear: () => void;
 };
 
-/** Same bag in different colors = separate cart lines. */
-function makeLineId(productId: string, selectedColors: string[]): string {
-  return `${productId}::${[...selectedColors].sort().join(",")}`;
+/** Same piece in different colors/size = separate cart lines. */
+function makeLineId(productId: string, selectedColors: string[], selectedSize: string | null): string {
+  return `${productId}::${[...selectedColors].sort().join(",")}::${selectedSize ?? ""}`;
 }
 
 export const useCart = create<CartState>()(
@@ -32,9 +32,9 @@ export const useCart = create<CartState>()(
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false }),
       toggle: () => set((s) => ({ isOpen: !s.isOpen })),
-      add: (product, selectedColors = []) =>
+      add: (product, selectedColors = [], selectedSize = null) =>
         set((s) => {
-          const lineId = makeLineId(product.id, selectedColors);
+          const lineId = makeLineId(product.id, selectedColors, selectedSize);
           const existing = s.items.find((i) => i.lineId === lineId);
           const items = existing
             ? s.items.map((i) => (i.lineId === lineId ? { ...i, qty: i.qty + 1 } : i))
@@ -50,6 +50,7 @@ export const useCart = create<CartState>()(
                   colorPrimary: product.colorPrimary,
                   colorSecondary: product.colorSecondary,
                   selectedColors,
+                  selectedSize,
                   qty: 1,
                 },
               ];
@@ -70,23 +71,29 @@ export const useCart = create<CartState>()(
     }),
     {
       name: "nic-crochet-cart",
-      version: 1,
-      // v0 carts keyed items by `id` with no color — map them into the new shape.
+      version: 2,
+      // Migrate older cart shapes: v0 keyed by `id` (no color), v1 added colors
+      // but no size. Normalize every item into the current shape.
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as { items?: Array<Record<string, unknown>> } | undefined;
-        if (version === 0 && state?.items) {
-          state.items = state.items.map((i) => ({
-            lineId: `${(i.id as string) ?? ""}::`,
-            productId: i.id,
-            slug: i.slug,
-            name: i.name,
-            priceCents: i.priceCents,
-            photo: i.photo ?? null,
-            colorPrimary: i.colorPrimary,
-            colorSecondary: i.colorSecondary,
-            selectedColors: [],
-            qty: i.qty,
-          }));
+        if (version < 2 && state?.items) {
+          state.items = state.items.map((i) => {
+            const productId = (i.productId as string) ?? (i.id as string) ?? "";
+            const selectedColors = (i.selectedColors as string[]) ?? [];
+            return {
+              lineId: makeLineId(productId, selectedColors, null),
+              productId,
+              slug: i.slug,
+              name: i.name,
+              priceCents: i.priceCents,
+              photo: i.photo ?? null,
+              colorPrimary: i.colorPrimary,
+              colorSecondary: i.colorSecondary,
+              selectedColors,
+              selectedSize: null,
+              qty: i.qty,
+            };
+          });
         }
         return state;
       },

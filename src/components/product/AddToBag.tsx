@@ -21,10 +21,13 @@ export default function AddToBag({
   const add = useCart((s) => s.add);
   const palette = resolveYarnColors(product.colors);
   const sold = product.status === "SOLD";
-  const needsColor = product.status === "MADE_TO_ORDER" && palette.length > 0;
+  const madeToOrder = product.status === "MADE_TO_ORDER";
+  const needsColor = madeToOrder && palette.length > 0;
+  const needsSize = madeToOrder && product.sizes.length > 0;
   const multi = product.allowsMultipleColors;
 
   const [selected, setSelected] = useState<string[]>([]);
+  const [size, setSize] = useState<string | null>(null);
 
   const toggle = (id: string) => {
     if (multi) {
@@ -34,12 +37,17 @@ export default function AddToBag({
     }
   };
 
-  const canAdd = !sold && (!needsColor || selected.length > 0);
+  const canAdd =
+    !sold && (!needsColor || selected.length > 0) && (!needsSize || size !== null);
   const prazo = leadTimeLabel(product.leadTimeMinDays, product.leadTimeMaxDays);
+
+  const missing: string[] = [];
+  if (needsColor && selected.length === 0) missing.push(multi ? "uma cor" : "a cor");
+  if (needsSize && size === null) missing.push("o tamanho");
 
   const handleAdd = () => {
     if (!canAdd) return;
-    add(product, needsColor ? selected : []);
+    add(product, needsColor ? selected : [], needsSize ? size : null);
     onAdded?.();
   };
 
@@ -91,6 +99,40 @@ export default function AddToBag({
         </div>
       )}
 
+      {product.sizes.length > 0 && (
+        <div className="mt-6">
+          <div className="text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[10px]">
+            {needsSize ? "Escolha o tamanho" : "Disponível nos tamanhos"}
+          </div>
+          <div className="flex flex-wrap gap-[10px]">
+            {product.sizes.map((s) =>
+              needsSize ? (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSize((cur) => (cur === s ? null : s))}
+                  aria-pressed={size === s}
+                  className={`grid place-items-center w-[46px] h-[46px] rounded-[12px] border text-[15px] font-semibold transition-colors ${
+                    size === s
+                      ? "border-sage bg-sage/15 text-ink"
+                      : "border-line-input text-muted-nav hover:border-sage"
+                  }`}
+                >
+                  {s}
+                </button>
+              ) : (
+                <span
+                  key={s}
+                  className="grid place-items-center w-[46px] h-[46px] rounded-[12px] border border-line-input text-[15px] font-semibold text-muted-nav"
+                >
+                  {s}
+                </span>
+              ),
+            )}
+          </div>
+        </div>
+      )}
+
       {prazo && (
         <div className="mt-6 flex items-center gap-[10px] text-[14px] text-muted-nav">
           <span className="text-[11px] tracking-[0.16em] uppercase text-muted-soft">
@@ -108,9 +150,9 @@ export default function AddToBag({
       >
         {sold ? "Peça esgotada" : "Adicionar à sacola"}
       </button>
-      {needsColor && selected.length === 0 && !sold && (
+      {!sold && missing.length > 0 && (
         <p className="mt-[10px] text-center text-[12px] text-muted-soft">
-          Escolha {multi ? "ao menos uma cor" : "uma cor"} para continuar.
+          Escolha {missing.join(" e ")} para continuar.
         </p>
       )}
     </div>

@@ -26,7 +26,10 @@ export default function Footer() {
           <div className="text-[11px] tracking-[0.24em] uppercase text-sage mb-[18px]">Navegar</div>
           <div className="flex flex-col gap-[11px]">
             <Link href="/colecao" className="text-[#D9D8C4] text-[15px] hover:text-cream transition-colors">
-              Coleção
+              Bolsas
+            </Link>
+            <Link href="/roupas" className="text-[#D9D8C4] text-[15px] hover:text-cream transition-colors">
+              Roupas
             </Link>
             <Link href="/sob-medida" className="text-[#D9D8C4] text-[15px] hover:text-cream transition-colors">
               Sob medida

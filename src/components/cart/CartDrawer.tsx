@@ -11,8 +11,10 @@ import ProductMedia from "@/components/product/ProductMedia";
 
 function buildCheckoutMessage(items: CartItem[], totalCents: number): string {
   const lines = items.map((i) => {
-    const cores = colorNames(i.selectedColors);
-    const name = cores ? `${i.name} — ${cores}` : i.name;
+    const parts = [colorNames(i.selectedColors), i.selectedSize ? `tam. ${i.selectedSize}` : ""]
+      .filter(Boolean)
+      .join(", ");
+    const name = parts ? `${i.name} — ${parts}` : i.name;
     return `• ${i.qty}x ${name} — ${brl(i.priceCents * i.qty)}`;
   });
   return [
@@ -108,8 +110,8 @@ export default function CartDrawer() {
                       remover
                     </button>
                   </div>
-                  {i.selectedColors.length > 0 && (
-                    <div className="flex items-center gap-[6px] mt-1">
+                  {(i.selectedColors.length > 0 || i.selectedSize) && (
+                    <div className="flex items-center gap-[6px] mt-1 flex-wrap">
                       {resolveYarnColors(i.selectedColors).map((c) => (
                         <span
                           key={c.id}
@@ -119,7 +121,9 @@ export default function CartDrawer() {
                         />
                       ))}
                       <span className="text-[12px] text-muted-soft">
-                        {colorNames(i.selectedColors)}
+                        {[colorNames(i.selectedColors), i.selectedSize ? `tam. ${i.selectedSize}` : ""]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </span>
                     </div>
                   )}

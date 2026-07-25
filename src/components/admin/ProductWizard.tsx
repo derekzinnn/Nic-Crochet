@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  ADMIN_CATEGORIES,
   STATUS_OPTIONS,
-  WIZARD_STEP_LABELS,
+  categoriesForKind,
+  CLOTHING_SIZES,
   type ProductDraft,
 } from "@/lib/product-form";
 import { brl, reaisToCents, leadTimeLabel } from "@/lib/format";
-import { PRODUCT_STATUS_LABEL } from "@/lib/types";
+import { PRODUCT_STATUS_LABEL, KIND_LABEL, type ProductKind } from "@/lib/types";
 import { YARN_COLORS, swatchFromColors } from "@/lib/yarn-colors";
 import { createProduct, updateProduct } from "@/app/area-da-nic/painel/actions";
 import PhotoUploader from "@/components/admin/PhotoUploader";
@@ -21,6 +21,15 @@ const dInput =
 const dLabel = "block text-[11px] tracking-[0.16em] uppercase text-muted-soft mb-[7px]";
 const card = "bg-white border border-line-card rounded-[18px] p-[26px] animate-fadeUp";
 
+type StepKey = "essencial" | "aparencia" | "tamanhos" | "prazo" | "historia";
+const STEP_LABEL: Record<StepKey, string> = {
+  essencial: "O essencial",
+  aparencia: "Aparência",
+  tamanhos: "Tamanhos",
+  prazo: "Prazo",
+  historia: "História",
+};
+
 function Chip({
   active,
   tone = "ink",
@@ -28,7 +37,6 @@ function Chip({
   children,
 }: {
   active: boolean;
-  /** "ink" for categories (dark active), "sage" for status (green active). */
   tone?: "ink" | "sage";
   onClick: () => void;
   children: React.ReactNode;
@@ -63,8 +71,24 @@ export default function ProductWizard({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  const isClothing = draft.kind === "CLOTHING";
+  const noun = isClothing ? "roupa" : "bolsa";
+  const steps: StepKey[] = isClothing
+    ? ["essencial", "aparencia", "tamanhos", "prazo", "historia"]
+    : ["essencial", "aparencia", "prazo", "historia"];
+  const stepKey = steps[step - 1];
+  const lastStep = steps.length;
+
   const set = <K extends keyof ProductDraft>(key: K, value: ProductDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
+
+  const setKind = (kind: ProductKind) =>
+    setDraft((d) => ({
+      ...d,
+      kind,
+      category: (categoriesForKind(kind)[0] ?? d.category) as string,
+      sizes: kind === "CLOTHING" ? d.sizes : [],
+    }));
 
   const toggleColor = (id: string) =>
     setDraft((d) => ({
@@ -72,9 +96,16 @@ export default function ProductWizard({
       colors: d.colors.includes(id) ? d.colors.filter((c) => c !== id) : [...d.colors, id],
     }));
 
+  const toggleSize = (s: string) =>
+    setDraft((d) => ({
+      ...d,
+      sizes: d.sizes.includes(s) ? d.sizes.filter((x) => x !== s) : [...d.sizes, s],
+    }));
+
   const priceLabel = draft.priceReais ? brl(reaisToCents(draft.priceReais)) : "R$ —";
   const swatch = swatchFromColors(draft.colors);
   const detailCount = draft.detailsText.split("\n").filter((s) => s.trim()).length;
+  const orderedSizes = (CLOTHING_SIZES as readonly string[]).filter((s) => draft.sizes.includes(s));
 
   const submit = () => {
     setError(null);
@@ -82,7 +113,11 @@ export default function ProductWizard({
       const res =
         mode === "create" ? await createProduct(draft) : await updateProduct(productId!, draft);
       if (res && res.ok) {
-        toast.success(mode === "create" ? "Bolsa publicada na loja!" : "Alterações salvas!");
+        toast.success(
+          mode === "create"
+            ? `${KIND_LABEL[draft.kind]} publicada na loja!`
+            : "Alterações salvas!",
+        );
         router.push("/area-da-nic/painel");
       } else {
         setError(res?.error ?? "Não foi possível salvar.");
@@ -94,13 +129,13 @@ export default function ProductWizard({
     <div>
       {/* stepper */}
       <div className="flex items-center gap-[10px] flex-wrap mb-6">
-        {WIZARD_STEP_LABELS.map((label, i) => {
+        {steps.map((key, i) => {
           const n = i + 1;
           const done = n < step;
           const current = n === step;
           return (
             <button
-              key={label}
+              key={key}
               type="button"
               onClick={() => done && setStep(n)}
               className="inline-flex items-center gap-[9px] bg-transparent p-0 font-sans"
@@ -118,7 +153,7 @@ export default function ProductWizard({
               <span
                 className={`text-[12px] tracking-[0.08em] uppercase ${current ? "text-ink" : "text-muted-soft"}`}
               >
-                {label}
+                {STEP_LABEL[key]}
               </span>
               <span className="w-[26px] h-px bg-[#D8D0BC] ml-[2px]" />
             </button>
@@ -129,24 +164,34 @@ export default function ProductWizard({
       <div className="grid grid-cols-1 min-[881px]:grid-cols-[1.25fr_0.75fr] gap-6 items-start">
         {/* form side */}
         <div className="flex flex-col gap-4">
-          {step === 1 && (
+          {stepKey === "essencial" && (
             <div className={card}>
               <h2 className="font-serif text-[23px] text-ink mb-1">O essencial</h2>
               <p className="text-[13px] text-muted-soft mb-5">
-                Nome, categoria, preço e situação da peça.
+                Tipo, nome, categoria, preço e situação da peça.
               </p>
+
+              <span className={`${dLabel} mb-[9px]`}>Tipo de peça</span>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {(["BAG", "CLOTHING"] as ProductKind[]).map((k) => (
+                  <Chip key={k} active={draft.kind === k} onClick={() => setKind(k)}>
+                    {KIND_LABEL[k]}
+                  </Chip>
+                ))}
+              </div>
+
               <label className="block mb-4">
-                <span className={dLabel}>Nome da bolsa</span>
+                <span className={dLabel}>Nome da {noun}</span>
                 <input
                   value={draft.name}
                   onChange={(e) => set("name", e.target.value)}
-                  placeholder="Ex: Bolsa Margarida"
+                  placeholder={isClothing ? "Ex: Top Solar" : "Ex: Bolsa Margarida"}
                   className={dInput}
                 />
               </label>
               <span className={`${dLabel} mb-[9px]`}>Categoria</span>
               <div className="flex flex-wrap gap-2 mb-4">
-                {ADMIN_CATEGORIES.map((c) => (
+                {categoriesForKind(draft.kind).map((c) => (
                   <Chip key={c} active={draft.category === c} onClick={() => set("category", c)}>
                     {c}
                   </Chip>
@@ -181,7 +226,7 @@ export default function ProductWizard({
             </div>
           )}
 
-          {step === 2 && (
+          {stepKey === "aparencia" && (
             <div className={card}>
               <h2 className="font-serif text-[23px] text-ink mb-1">Aparência</h2>
               <p className="text-[13px] text-muted-soft mb-5">
@@ -256,55 +301,84 @@ export default function ProductWizard({
             </div>
           )}
 
-          {step === 3 && (
-            <div className="flex flex-col gap-4 animate-fadeUp">
-              <div className="bg-white border border-line-card rounded-[18px] p-[26px]">
-                <h2 className="font-serif text-[23px] text-ink mb-1">Prazo de entrega</h2>
-                <p className="text-[13px] text-muted-soft mb-5">
-                  Em quantos dias a peça costuma ficar pronta. Aparece na loja para a cliente saber
-                  o que esperar. Deixe em branco se preferir não informar.
-                </p>
-                <div className="flex gap-4 flex-wrap">
-                  <label className="block">
-                    <span className={dLabel}>Prazo mínimo (dias)</span>
-                    <input
-                      value={draft.leadTimeMinDays}
-                      onChange={(e) => set("leadTimeMinDays", e.target.value)}
-                      inputMode="numeric"
-                      placeholder="15"
-                      className={`${dInput} w-[150px]`}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className={dLabel}>Prazo máximo (dias)</span>
-                    <input
-                      value={draft.leadTimeMaxDays}
-                      onChange={(e) => set("leadTimeMaxDays", e.target.value)}
-                      inputMode="numeric"
-                      placeholder="30"
-                      className={`${dInput} w-[150px]`}
-                    />
-                  </label>
-                </div>
-                <p className="mt-4 text-[13px] text-muted-nav">
-                  Na loja aparece como:{" "}
-                  <strong className="text-ink">
-                    {leadTimeLabel(
-                      parseInt(draft.leadTimeMinDays, 10) || null,
-                      parseInt(draft.leadTimeMaxDays, 10) || null,
-                    ) ?? "prazo não informado"}
-                  </strong>
-                </p>
+          {stepKey === "tamanhos" && (
+            <div className={card}>
+              <h2 className="font-serif text-[23px] text-ink mb-1">Tamanhos</h2>
+              <p className="text-[13px] text-muted-soft mb-5">
+                Marque os tamanhos em que esta roupa pode ser feita. A cliente escolhe um deles ao
+                pedir.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {CLOTHING_SIZES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => toggleSize(s)}
+                    className={`grid place-items-center w-[54px] h-[54px] rounded-[14px] border text-[16px] font-semibold transition-colors ${
+                      draft.sizes.includes(s)
+                        ? "border-sage bg-sage text-cream"
+                        : "border-line-input text-muted-nav hover:border-sage"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
+              {orderedSizes.length === 0 && (
+                <p className="mt-4 text-[13px] text-muted-faint">
+                  Sem tamanhos marcados, a peça não pede tamanho na hora da compra.
+                </p>
+              )}
             </div>
           )}
 
-          {step === 4 && (
+          {stepKey === "prazo" && (
+            <div className="bg-white border border-line-card rounded-[18px] p-[26px] animate-fadeUp">
+              <h2 className="font-serif text-[23px] text-ink mb-1">Prazo de entrega</h2>
+              <p className="text-[13px] text-muted-soft mb-5">
+                Em quantos dias a peça costuma ficar pronta. Aparece na loja para a cliente saber o
+                que esperar. Deixe em branco se preferir não informar.
+              </p>
+              <div className="flex gap-4 flex-wrap">
+                <label className="block">
+                  <span className={dLabel}>Prazo mínimo (dias)</span>
+                  <input
+                    value={draft.leadTimeMinDays}
+                    onChange={(e) => set("leadTimeMinDays", e.target.value)}
+                    inputMode="numeric"
+                    placeholder="15"
+                    className={`${dInput} w-[150px]`}
+                  />
+                </label>
+                <label className="block">
+                  <span className={dLabel}>Prazo máximo (dias)</span>
+                  <input
+                    value={draft.leadTimeMaxDays}
+                    onChange={(e) => set("leadTimeMaxDays", e.target.value)}
+                    inputMode="numeric"
+                    placeholder="30"
+                    className={`${dInput} w-[150px]`}
+                  />
+                </label>
+              </div>
+              <p className="mt-4 text-[13px] text-muted-nav">
+                Na loja aparece como:{" "}
+                <strong className="text-ink">
+                  {leadTimeLabel(
+                    parseInt(draft.leadTimeMinDays, 10) || null,
+                    parseInt(draft.leadTimeMaxDays, 10) || null,
+                  ) ?? "prazo não informado"}
+                </strong>
+              </p>
+            </div>
+          )}
+
+          {stepKey === "historia" && (
             <div className="flex flex-col gap-4 animate-fadeUp">
               <div className="bg-white border border-line-card rounded-[18px] p-[26px]">
                 <h2 className="font-serif text-[23px] text-ink mb-1">História da peça</h2>
                 <p className="text-[13px] text-muted-soft mb-5">
-                  O texto que aparece na página da bolsa.
+                  O texto que aparece na página da peça.
                 </p>
                 <label className="block mb-4">
                   <span className={dLabel}>Descrição</span>
@@ -333,8 +407,12 @@ export default function ProductWizard({
                   Revisão rápida
                 </div>
                 {[
+                  ["Tipo", KIND_LABEL[draft.kind]],
                   ["Nome", draft.name.trim() || "—"],
                   ["Categoria", draft.category],
+                  ...(isClothing
+                    ? [["Tamanhos", orderedSizes.length ? orderedSizes.join(", ") : "—"] as const]
+                    : []),
                   ["Situação", PRODUCT_STATUS_LABEL[draft.status]],
                   ["Destaque", draft.featured ? "Sim" : "Não"],
                   ["Detalhes", `${detailCount} detalhe(s)`],
@@ -368,7 +446,7 @@ export default function ProductWizard({
                 ← Voltar
               </button>
             )}
-            {step < 4 && (
+            {step < lastStep && (
               <button
                 type="button"
                 onClick={() => setStep((s) => s + 1)}
@@ -377,7 +455,7 @@ export default function ProductWizard({
                 Continuar →
               </button>
             )}
-            {step === 4 && (
+            {step === lastStep && (
               <button
                 type="button"
                 onClick={submit}
@@ -424,7 +502,7 @@ export default function ProductWizard({
             </div>
             <div className="flex items-baseline justify-between gap-[10px] mt-[13px]">
               <span className="font-serif text-[20px] text-ink">
-                {draft.name.trim() || "Nome da bolsa"}
+                {draft.name.trim() || `Nome da ${noun}`}
               </span>
               <span className="text-[14px] font-bold text-sage-deep whitespace-nowrap">
                 {priceLabel}
@@ -432,6 +510,7 @@ export default function ProductWizard({
             </div>
             <div className="text-[11px] tracking-[0.14em] uppercase text-muted-faint mt-[3px]">
               {draft.category}
+              {isClothing && orderedSizes.length > 0 ? ` · ${orderedSizes.join("/")}` : ""}
             </div>
           </div>
 

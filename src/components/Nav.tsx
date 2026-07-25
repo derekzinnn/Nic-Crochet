@@ -7,7 +7,8 @@ import Logo from "@/components/Logo";
 import { useCart, selectCount } from "@/components/cart/cart-store";
 
 const LINKS = [
-  { href: "/colecao", label: "Coleção" },
+  { href: "/colecao", label: "Bolsas" },
+  { href: "/roupas", label: "Roupas" },
   { href: "/sob-medida", label: "Sob medida" },
 ];
 

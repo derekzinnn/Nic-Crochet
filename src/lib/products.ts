@@ -14,6 +14,8 @@ function toView(p: DbProduct): ProductView {
     id: p.id,
     name: p.name,
     slug: p.slug,
+    kind: p.kind,
+    sizes: p.sizes,
     category: p.category,
     priceCents: p.priceCents,
     description: p.description,

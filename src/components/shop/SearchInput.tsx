@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
  * Drives the `q` URL param (server-side filtering) with a debounce, so the
  * result page stays shareable/SEO-friendly while typing feels live.
  */
-export default function SearchInput() {
+export default function SearchInput({ placeholder }: { placeholder?: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -44,7 +44,7 @@ export default function SearchInput() {
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Buscar por nome — ex: Margarida, clutch..."
+        placeholder={placeholder ?? "Buscar por nome — ex: Margarida, clutch..."}
         aria-label="Buscar peças"
         className="w-full bg-white border border-line-input rounded-pill py-[14px] pr-[18px] pl-[44px] font-sans text-[15px] text-ink outline-none focus:border-sage"
       />

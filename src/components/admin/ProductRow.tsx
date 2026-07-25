@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { ProductView, ProductStatus } from "@/lib/types";
+import { KIND_LABEL, type ProductView, type ProductStatus } from "@/lib/types";
 import { brl } from "@/lib/format";
 import { STATUS_OPTIONS } from "@/lib/product-form";
 import { deleteProduct, setProductStatus } from "@/app/area-da-nic/painel/actions";
@@ -52,9 +52,21 @@ export default function ProductRow({ product }: { product: ProductView }) {
         }}
       />
       <div className="flex-1 min-w-[170px]">
-        <div className="font-serif text-[20px] text-ink truncate">{product.name}</div>
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-[9px] tracking-[0.12em] uppercase font-bold px-[7px] py-[2px] rounded-[6px] ${
+              product.kind === "CLOTHING"
+                ? "bg-[#C9A85B]/20 text-[#8A6B2E]"
+                : "bg-sage/20 text-sage-deep"
+            }`}
+          >
+            {KIND_LABEL[product.kind]}
+          </span>
+          <div className="font-serif text-[20px] text-ink truncate">{product.name}</div>
+        </div>
         <div className="text-[11px] tracking-[0.14em] uppercase text-muted-faint mt-[3px]">
           {product.category}
+          {product.sizes.length ? ` · ${product.sizes.join("/")}` : ""}
           {product.tag ? ` · ${product.tag}` : ""}
           {product.featured ? " · ★" : ""}
         </div>

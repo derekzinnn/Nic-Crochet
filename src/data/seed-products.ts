@@ -9,7 +9,13 @@ import { swatchFromColors } from "@/lib/yarn-colors";
  */
 type SeedProduct = Omit<
   ProductView,
-  "colorPrimary" | "colorSecondary" | "allowsMultipleColors" | "leadTimeMinDays" | "leadTimeMaxDays"
+  | "colorPrimary"
+  | "colorSecondary"
+  | "allowsMultipleColors"
+  | "leadTimeMinDays"
+  | "leadTimeMaxDays"
+  | "kind"
+  | "sizes"
 >;
 
 const raw: SeedProduct[] = [
@@ -132,6 +138,8 @@ export const seedProducts: ProductView[] = raw.map((p) => {
   const swatch = swatchFromColors(p.colors);
   return {
     ...p,
+    kind: "BAG" as const,
+    sizes: [],
     allowsMultipleColors: p.colors.length > 1,
     leadTimeMinDays: null,
     leadTimeMaxDays: null,

@@ -155,6 +155,21 @@ pixel on a production stack, and makes real the functionality the prototype fake
     `AddToCartButton`. **Verified** in-browser: single + multi pickers, required-
     color gate, cart line colors, checkout message; `tsc` + `next build` clean.
 
+- [x] **Phase 12 — Roupas (clothing) as a second product kind** ✅
+  - `Product.kind` (BAG | CLOTHING) + `sizes String[]`. Wizard step 1 has a
+    Bolsa/Roupa selector; categories switch per kind (`BAG_CATEGORIES` vs
+    `CLOTHING_CATEGORIES`, editable in product-form). Clothing gets an extra
+    **Tamanhos** step (P/M/G multi-select); bags keep the 4-step flow.
+  - Separate **`/roupas`** collection (kind=CLOTHING); `/colecao` now filters
+    kind=BAG. Shared `CollectionView`; `parseShopParams`/`buildShopHref`/
+    `FiltersOverlay` parametrized by basePath + categories. Nav/footer: Bolsas ·
+    Roupas · Sob medida.
+  - Customer picks **size** on made-to-order clothing (like color) → cart line
+    keyed by product+colors+size; drawer + WhatsApp checkout show "tam. M".
+  - Admin panel is now "Suas peças" (bags + clothes) with a kind badge per row;
+    "+ Nova peça". **Verified** in-browser: Roupa wizard (Tamanhos step), /roupas
+    vs /colecao split (8 vs 1), size picker + cart + checkout; `tsc`/`build` clean.
+
 ## Project layout
 
 ```

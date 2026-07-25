@@ -14,22 +14,28 @@ import {
 
 /**
  * The "Filtros" button + full-screen filters page from the design.
- * Every choice just patches the /colecao URL params (router.replace), so the
+ * Every choice patches the collection URL params (router.replace), so the
  * server keeps doing the filtering and the URL stays shareable.
  */
 export default function FiltersOverlay({
   params,
   shownCount,
+  basePath = "/colecao",
+  categories = SHOP_CATEGORIES,
+  categoryLabel = "Tipo de bolsa",
 }: {
   params: ShopParams;
   shownCount: number;
+  basePath?: string;
+  categories?: readonly string[];
+  categoryLabel?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const count = activeFilterCount(params);
 
   const apply = (patch: Partial<ShopParams>) =>
-    router.replace(buildShopHref(params, patch), { scroll: false });
+    router.replace(buildShopHref(params, patch, basePath), { scroll: false });
 
   // Lock the page scroll while the overlay is up.
   useEffect(() => {
@@ -108,9 +114,9 @@ export default function FiltersOverlay({
 
               {/* categoria */}
               <div className="mb-[38px]">
-                <div className={sectionLabel}>Tipo de bolsa</div>
+                <div className={sectionLabel}>{categoryLabel}</div>
                 <div className="flex flex-wrap gap-[9px]">
-                  {SHOP_CATEGORIES.map((c) => {
+                  {categories.map((c) => {
                     const active = params.cat === c;
                     return (
                       <button

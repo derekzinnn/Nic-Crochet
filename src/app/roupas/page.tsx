@@ -4,31 +4,32 @@ import { parseShopParams, filterSortProducts, shopCategoriesForKind } from "@/li
 import CollectionView from "@/components/shop/CollectionView";
 
 export const metadata: Metadata = {
-  title: "Bolsas",
+  title: "Roupas",
   description:
-    "A coleção completa de bolsas de crochê da Nic. Busque pelo nome, filtre por estilo ou ordene por preço.",
+    "As roupas de crochê feitas à mão pela Nic. Busque pelo nome, filtre por tipo ou ordene por preço.",
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function ColecaoPage({
+export default async function RoupasPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const categories = shopCategoriesForKind("BAG");
+  const categories = shopCategoriesForKind("CLOTHING");
   const params = parseShopParams(await searchParams, categories);
-  const all = (await getAllProducts()).filter((p) => p.kind === "BAG");
+  const all = (await getAllProducts()).filter((p) => p.kind === "CLOTHING");
   const shown = filterSortProducts(all, params);
 
   return (
     <CollectionView
-      eyebrow="A coleção completa"
-      title="Encontre a sua bolsa"
-      subtitle="Busque pelo nome, filtre por estilo ou ordene por preço. Cada peça é única."
-      basePath="/colecao"
+      eyebrow="Feito à mão"
+      title="Roupas de crochê"
+      subtitle="Peças únicas para vestir. Busque pelo nome, filtre por tipo ou ordene por preço."
+      basePath="/roupas"
       categories={categories}
-      categoryLabel="Tipo de bolsa"
+      categoryLabel="Tipo de roupa"
+      searchPlaceholder="Buscar por nome — ex: top, cropped..."
       params={params}
       shown={shown}
     />

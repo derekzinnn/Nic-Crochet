@@ -25,10 +25,10 @@ export default async function EditarBolsaPage({ params }: { params: Promise<{ id
         href="/area-da-nic/painel"
         className="text-[13px] text-muted-soft hover:text-sage transition-colors"
       >
-        ← Suas bolsas
+        ← Suas peças
       </Link>
       <h1 className="font-serif font-medium text-[clamp(30px,4vw,42px)] text-ink mt-2 mb-5">
-        Editar bolsa
+        Editar peça
       </h1>
       <ProductWizard mode="edit" productId={product.id} initial={draftFromProduct(product)} />
     </div>

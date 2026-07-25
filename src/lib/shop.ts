@@ -1,5 +1,6 @@
-import type { ProductView } from "@/lib/types";
+import type { ProductView, ProductKind } from "@/lib/types";
 import { PRODUCT_CATEGORIES } from "@/lib/types";
+import { CLOTHING_CATEGORIES } from "@/lib/product-form";
 
 export type SortKey = "destaque" | "menor" | "maior" | "az";
 
@@ -20,8 +21,13 @@ export const PRICE_RANGES: { key: PriceRangeKey; label: string; min?: number; ma
   { key: "acima160", label: "Acima de R$ 160", min: 160_00 },
 ];
 
-/** "Todas" + the real categories, for the filter chips. */
+/** "Todas" + the real categories, for the filter chips (bags, back-compat). */
 export const SHOP_CATEGORIES = ["Todas", ...PRODUCT_CATEGORIES] as const;
+
+/** Filter-chip categories for a collection kind. */
+export function shopCategoriesForKind(kind: ProductKind): readonly string[] {
+  return kind === "CLOTHING" ? ["Todas", ...CLOTHING_CATEGORIES] : SHOP_CATEGORIES;
+}
 
 export type ShopParams = {
   q: string;
@@ -31,14 +37,17 @@ export type ShopParams = {
 };
 
 /** Normalize raw URL search params into a typed, defaulted shape. */
-export function parseShopParams(sp: Record<string, string | string[] | undefined>): ShopParams {
+export function parseShopParams(
+  sp: Record<string, string | string[] | undefined>,
+  validCategories: readonly string[] = SHOP_CATEGORIES,
+): ShopParams {
   const pick = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
   const catRaw = pick(sp.cat);
   const sortRaw = pick(sp.sort) as SortKey;
   const precoRaw = pick(sp.preco) as PriceRangeKey;
   return {
     q: pick(sp.q).trim(),
-    cat: (SHOP_CATEGORIES as readonly string[]).includes(catRaw) ? catRaw : "Todas",
+    cat: validCategories.includes(catRaw) ? catRaw : "Todas",
     sort: SORT_OPTIONS.some((o) => o.key === sortRaw) ? sortRaw : "destaque",
     preco: PRICE_RANGES.some((r) => r.key === precoRaw) ? precoRaw : "todas",
   };
@@ -101,8 +110,12 @@ export function filterSummary(p: ShopParams): string {
   );
 }
 
-/** Build a /colecao href from current params with a patch applied. */
-export function buildShopHref(current: ShopParams, patch: Partial<ShopParams>): string {
+/** Build a collection href (default /colecao) from current params with a patch. */
+export function buildShopHref(
+  current: ShopParams,
+  patch: Partial<ShopParams>,
+  basePath = "/colecao",
+): string {
   const merged = { ...current, ...patch };
   const params = new URLSearchParams();
   if (merged.q) params.set("q", merged.q);
@@ -110,5 +123,5 @@ export function buildShopHref(current: ShopParams, patch: Partial<ShopParams>): 
   if (merged.sort && merged.sort !== "destaque") params.set("sort", merged.sort);
   if (merged.preco && merged.preco !== "todas") params.set("preco", merged.preco);
   const qs = params.toString();
-  return qs ? `/colecao?${qs}` : "/colecao";
+  return qs ? `${basePath}?${qs}` : basePath;
 }

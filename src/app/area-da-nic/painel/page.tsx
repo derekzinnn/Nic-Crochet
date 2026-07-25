@@ -26,17 +26,17 @@ export default async function PainelPage() {
       <div className="flex items-end justify-between flex-wrap gap-4 mb-[22px]">
         <div>
           <h1 className="font-serif font-medium text-[clamp(30px,4vw,42px)] text-ink">
-            Suas bolsas
+            Suas peças
           </h1>
           <p className="text-[13px] text-muted-soft mt-1">
-            Tudo o que está na loja, em um lugar só.
+            Bolsas e roupas da loja, em um lugar só.
           </p>
         </div>
         <Link
           href="/area-da-nic/painel/nova"
           className="btn-pill bg-ink text-cream px-[26px] py-[14px] !text-[12px] hover:bg-sage"
         >
-          + Nova bolsa
+          + Nova peça
         </Link>
       </div>
 
