@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { ProductView } from "@/lib/types";
+import HeroGallery from "@/components/home/HeroGallery";
 
-export default function Hero() {
+export default function Hero({ heroBag }: { heroBag: ProductView | null }) {
   return (
     <header className="relative min-h-screen grid grid-cols-1 min-[881px]:grid-cols-[1.1fr_0.9fr] items-center gap-[clamp(40px,6vw,90px)] px-[clamp(20px,5vw,72px)] pt-[120px] min-[881px]:pt-[160px] pb-[60px] min-[881px]:pb-[100px] bg-sand text-center min-[881px]:text-left">
       <div className="relative max-w-[640px] mx-auto min-[881px]:mx-0">
@@ -43,13 +45,16 @@ export default function Hero() {
         </div>
       </div>
 
-      <div
-        data-reveal
-        className="relative w-full aspect-[4/5] max-h-[52vh] min-[881px]:max-h-[74vh] rounded-[300px_300px_16px_16px] overflow-hidden bg-sage-tint mx-auto"
-      >
-        <span className="absolute left-1/2 bottom-6 -translate-x-1/2 font-sans text-[10px] tracking-[0.28em] uppercase text-cream/80 whitespace-nowrap">
-          foto principal
-        </span>
+      <div data-reveal>
+        {heroBag ? (
+          <HeroGallery photos={heroBag.photos} slug={heroBag.slug} name={heroBag.name} />
+        ) : (
+          <div className="relative w-full aspect-[4/5] max-h-[52vh] min-[881px]:max-h-[74vh] rounded-[300px_300px_16px_16px] overflow-hidden bg-sage-tint mx-auto">
+            <span className="absolute left-1/2 bottom-6 -translate-x-1/2 font-sans text-[10px] tracking-[0.28em] uppercase text-cream/80 whitespace-nowrap">
+              destaque uma bolsa no painel
+            </span>
+          </div>
+        )}
       </div>
     </header>
   );

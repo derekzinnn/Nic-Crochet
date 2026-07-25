@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function AtelierStrip() {
   return (
     <section className="relative px-[clamp(20px,5vw,64px)] py-[clamp(80px,11vw,150px)] bg-sage-deep text-[#F3F0E4] overflow-hidden">
@@ -37,17 +39,13 @@ export default function AtelierStrip() {
           data-delay="120"
           className="relative aspect-[5/6] rounded-[180px_18px_180px_18px] overflow-hidden shadow-[0_40px_90px_-40px_rgba(0,0,0,.5)]"
         >
-          <div
-            className="absolute inset-0"
-            style={{ background: "repeating-linear-gradient(46deg, #C9AE7E 0 14px, #BC9E6A 14px 28px)" }}
+          <Image
+            src="/nic-atelier.jpg"
+            alt="Nic, fundadora e artesã do ateliê"
+            fill
+            sizes="(max-width: 880px) 90vw, 42vw"
+            className="object-cover"
           />
-          <div
-            className="absolute inset-0"
-            style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,.2), transparent 55%)" }}
-          />
-          <span className="absolute left-1/2 bottom-[22px] -translate-x-1/2 text-[10px] tracking-[0.28em] uppercase text-white/85 whitespace-nowrap">
-            [ retrato — Nic no ateliê ]
-          </span>
         </div>
       </div>
     </section>

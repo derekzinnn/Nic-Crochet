@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import ProductMedia from "@/components/product/ProductMedia";
 
 /**
- * Photo gallery for a bag: shows the cover and lets the customer flip through
- * the remaining photos with arrows / dots. Falls back to the woven swatch when
- * the bag has no photo yet. Renders as an absolute layer so `next/image fill`
- * resolves against it — drop it inside a `relative` sized container.
+ * Photo gallery for a bag. All photos are rendered stacked and toggled with
+ * opacity (not by swapping a single <img> src), so every photo is preloaded and
+ * switching is instant with a crossfade instead of a blank flash. Falls back to
+ * the woven swatch when the bag has no photo. Render inside a `relative` box.
  */
 export default function ProductGallery({
   name,
@@ -27,9 +28,22 @@ export default function ProductGallery({
   sizes?: string;
 }) {
   const [index, setIndex] = useState(0);
-  const many = photos.length > 1;
-  const current = photos[index] ?? null;
 
+  if (photos.length === 0) {
+    return (
+      <div className="absolute inset-0">
+        <ProductMedia
+          name={name}
+          photo={null}
+          colorPrimary={colorPrimary}
+          colorSecondary={colorSecondary}
+          variant={variant}
+        />
+      </div>
+    );
+  }
+
+  const many = photos.length > 1;
   const go = (delta: number) => setIndex((i) => (i + delta + photos.length) % photos.length);
 
   const arrow =
@@ -39,15 +53,20 @@ export default function ProductGallery({
 
   return (
     <div className="absolute inset-0">
-      <ProductMedia
-        name={name}
-        photo={current}
-        colorPrimary={colorPrimary}
-        colorSecondary={colorSecondary}
-        variant={variant}
-        priority={priority}
-        sizes={sizes}
-      />
+      {photos.map((src, i) => (
+        <Image
+          key={src}
+          src={src}
+          alt={name}
+          fill
+          // Preload every photo (not lazy) so switching is instant, no blank flash.
+          {...(i === 0 ? { priority } : { loading: "eager" as const })}
+          sizes={sizes ?? "(max-width: 880px) 100vw, 450px"}
+          className={`object-cover transition-opacity duration-300 ${
+            i === index ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
 
       {many && (
         <>

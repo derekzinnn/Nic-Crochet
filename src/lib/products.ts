@@ -91,6 +91,20 @@ export async function getFeaturedProducts(limit = 3): Promise<ProductView[]> {
   );
 }
 
+/** The bag shown in the home hero: newest featured, non-sold, that has photos. */
+export async function getHeroProduct(): Promise<ProductView | null> {
+  return withFallback(
+    cached(["hero"], async () => {
+      const p = await prisma.product.findFirst({
+        where: { featured: true, status: { not: "SOLD" }, photos: { isEmpty: false } },
+        orderBy: { createdAt: "desc" },
+      });
+      return p ? toView(p) : null;
+    }),
+    seedProducts.find((p) => p.featured && p.photos.length > 0) ?? null,
+  );
+}
+
 export async function getProductBySlug(slug: string): Promise<ProductView | null> {
   return withFallback(
     cached(["slug", slug], async () => {
