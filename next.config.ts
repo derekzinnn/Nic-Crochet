@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // Serve modern formats — WebP first (fast, universal), AVIF when supported.
+    formats: ["image/avif", "image/webp"],
+    // Keep each optimized size in the on-disk cache for 30 days instead of the
+    // 60s default, so a photo is only re-optimized once (uploads use fresh URLs).
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     // Supabase Storage public bucket URLs. Host is derived from the env var so
     // it works across environments without hardcoding the project ref.
     remotePatterns: supabaseHost

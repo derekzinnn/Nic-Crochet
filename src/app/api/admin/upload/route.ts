@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { getSession } from "@/lib/auth";
 import { getSupabaseAdmin, STORAGE_BUCKET, storagePublicUrl } from "@/lib/supabase";
 
-const MAX_BYTES = 6 * 1024 * 1024; // 6 MB
+// sharp is a native module — force the Node.js runtime (not edge).
+export const runtime = "nodejs";
+
+const MAX_BYTES = 12 * 1024 * 1024; // 12 MB — raw iPhone shots are heavy; we compress below.
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+
+// Product photos render at most ~450px wide (3:4 portrait). Cap the long edge at
+// 1400px so retina screens stay crisp while the stored file drops from multi-MB
+// iPhone originals to a couple hundred KB — the whole point of this route.
+const MAX_EDGE = 1400;
+const WEBP_QUALITY = 80;
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -26,18 +36,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Formato inválido. Use JPG, PNG ou WebP." }, { status: 400 });
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: "Imagem muito grande (máx. 6 MB)." }, { status: 400 });
+    return NextResponse.json({ error: "Imagem muito grande (máx. 12 MB)." }, { status: 400 });
   }
 
-  const ext = file.type.split("/")[1].replace("jpeg", "jpg");
-  const path = `products/${crypto.randomUUID()}.${ext}`;
-  const bytes = new Uint8Array(await file.arrayBuffer());
+  // Resize + re-encode to WebP. `rotate()` with no args bakes in the EXIF
+  // orientation so iPhone portraits don't come out sideways once EXIF is dropped.
+  let optimized: Buffer;
+  try {
+    optimized = await sharp(Buffer.from(await file.arrayBuffer()))
+      .rotate()
+      .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: WEBP_QUALITY })
+      .toBuffer();
+  } catch {
+    return NextResponse.json({ error: "Não foi possível processar a imagem." }, { status: 400 });
+  }
+
+  const path = `products/${crypto.randomUUID()}.webp`;
 
   try {
     const supabase = getSupabaseAdmin();
     const { error } = await supabase.storage
       .from(STORAGE_BUCKET)
-      .upload(path, bytes, { contentType: file.type, upsert: false });
+      .upload(path, optimized, { contentType: "image/webp", upsert: false });
     if (error) {
       return NextResponse.json({ error: `Falha no upload: ${error.message}` }, { status: 500 });
     }
