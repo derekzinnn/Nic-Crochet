@@ -47,6 +47,12 @@ model Product {
   // Delivery estimate in days (min/max). Null = not informed.
   leadTimeMinDays Int?
   leadTimeMaxDays Int?
+  // Shipping package dimensions (Melhor Envio quote). Defaults suit a typical
+  // crochet bag; Nic can adjust per piece in the admin wizard.
+  weightGrams Int           @default(350)
+  heightCm    Int           @default(12)
+  widthCm     Int           @default(22)
+  lengthCm    Int           @default(28)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 

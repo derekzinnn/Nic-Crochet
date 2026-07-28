@@ -26,7 +26,7 @@ const STEP_LABEL: Record<StepKey, string> = {
   essencial: "O essencial",
   aparencia: "Aparência",
   tamanhos: "Tamanhos",
-  prazo: "Prazo",
+  prazo: "Entrega",
   historia: "História",
 };
 
@@ -333,43 +333,74 @@ export default function ProductWizard({
           )}
 
           {stepKey === "prazo" && (
-            <div className="bg-white border border-line-card rounded-[18px] p-[26px] animate-fadeUp">
-              <h2 className="font-serif text-[23px] text-ink mb-1">Prazo de entrega</h2>
-              <p className="text-[13px] text-muted-soft mb-5">
-                Em quantos dias a peça costuma ficar pronta. Aparece na loja para a cliente saber o
-                que esperar. Deixe em branco se preferir não informar.
-              </p>
-              <div className="flex gap-4 flex-wrap">
-                <label className="block">
-                  <span className={dLabel}>Prazo mínimo (dias)</span>
-                  <input
-                    value={draft.leadTimeMinDays}
-                    onChange={(e) => set("leadTimeMinDays", e.target.value)}
-                    inputMode="numeric"
-                    placeholder="15"
-                    className={`${dInput} w-[150px]`}
-                  />
-                </label>
-                <label className="block">
-                  <span className={dLabel}>Prazo máximo (dias)</span>
-                  <input
-                    value={draft.leadTimeMaxDays}
-                    onChange={(e) => set("leadTimeMaxDays", e.target.value)}
-                    inputMode="numeric"
-                    placeholder="30"
-                    className={`${dInput} w-[150px]`}
-                  />
-                </label>
+            <div className="flex flex-col gap-4 animate-fadeUp">
+              <div className="bg-white border border-line-card rounded-[18px] p-[26px]">
+                <h2 className="font-serif text-[23px] text-ink mb-1">Prazo de entrega</h2>
+                <p className="text-[13px] text-muted-soft mb-5">
+                  Em quantos dias a peça costuma ficar pronta. Aparece na loja para a cliente saber o
+                  que esperar. Deixe em branco se preferir não informar.
+                </p>
+                <div className="flex gap-4 flex-wrap">
+                  <label className="block">
+                    <span className={dLabel}>Prazo mínimo (dias)</span>
+                    <input
+                      value={draft.leadTimeMinDays}
+                      onChange={(e) => set("leadTimeMinDays", e.target.value)}
+                      inputMode="numeric"
+                      placeholder="15"
+                      className={`${dInput} w-[150px]`}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className={dLabel}>Prazo máximo (dias)</span>
+                    <input
+                      value={draft.leadTimeMaxDays}
+                      onChange={(e) => set("leadTimeMaxDays", e.target.value)}
+                      inputMode="numeric"
+                      placeholder="30"
+                      className={`${dInput} w-[150px]`}
+                    />
+                  </label>
+                </div>
+                <p className="mt-4 text-[13px] text-muted-nav">
+                  Na loja aparece como:{" "}
+                  <strong className="text-ink">
+                    {leadTimeLabel(
+                      parseInt(draft.leadTimeMinDays, 10) || null,
+                      parseInt(draft.leadTimeMaxDays, 10) || null,
+                    ) ?? "prazo não informado"}
+                  </strong>
+                </p>
               </div>
-              <p className="mt-4 text-[13px] text-muted-nav">
-                Na loja aparece como:{" "}
-                <strong className="text-ink">
-                  {leadTimeLabel(
-                    parseInt(draft.leadTimeMinDays, 10) || null,
-                    parseInt(draft.leadTimeMaxDays, 10) || null,
-                  ) ?? "prazo não informado"}
-                </strong>
-              </p>
+
+              <div className="bg-white border border-line-card rounded-[18px] p-[26px]">
+                <h2 className="font-serif text-[23px] text-ink mb-1">Medidas para frete</h2>
+                <p className="text-[13px] text-muted-soft mb-5">
+                  Peso e dimensões da peça embalada — usados para calcular o frete no checkout.
+                  Já vêm preenchidos com um padrão de bolsa; ajuste se esta peça for bem diferente.
+                </p>
+                <div className="grid grid-cols-2 gap-4 max-w-[420px]">
+                  {(
+                    [
+                      ["weightGrams", "Peso (g)", "350"],
+                      ["heightCm", "Altura (cm)", "12"],
+                      ["widthCm", "Largura (cm)", "22"],
+                      ["lengthCm", "Comprimento (cm)", "28"],
+                    ] as const
+                  ).map(([key, label, ph]) => (
+                    <label key={key} className="block">
+                      <span className={dLabel}>{label}</span>
+                      <input
+                        value={draft[key]}
+                        onChange={(e) => set(key, e.target.value)}
+                        inputMode="numeric"
+                        placeholder={ph}
+                        className={dInput}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

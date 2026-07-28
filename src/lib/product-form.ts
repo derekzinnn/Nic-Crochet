@@ -1,5 +1,6 @@
 import type { ProductKind, ProductStatus, ProductView } from "@/lib/types";
 import { centsToReais } from "@/lib/format";
+import { DEFAULT_PACKAGE } from "@/lib/shipping";
 
 /** Bag categories offered in the admin wizard (matches the prototype's chips). */
 export const BAG_CATEGORIES = [
@@ -55,6 +56,11 @@ export type ProductDraft = {
   allowsMultipleColors: boolean; // customer may pick more than one color
   leadTimeMinDays: string; // delivery estimate, raw input in days ("" = not informed)
   leadTimeMaxDays: string;
+  // Shipping package (raw inputs, in grams / cm) — drive the Melhor Envio quote.
+  weightGrams: string;
+  heightCm: string;
+  widthCm: string;
+  lengthCm: string;
   tag: string;
   description: string;
   detailsText: string; // one detail per line
@@ -73,6 +79,10 @@ export const emptyDraft: ProductDraft = {
   allowsMultipleColors: false,
   leadTimeMinDays: "",
   leadTimeMaxDays: "",
+  weightGrams: String(DEFAULT_PACKAGE.weightGrams),
+  heightCm: String(DEFAULT_PACKAGE.heightCm),
+  widthCm: String(DEFAULT_PACKAGE.widthCm),
+  lengthCm: String(DEFAULT_PACKAGE.lengthCm),
   tag: "",
   description: "",
   detailsText: "",
@@ -92,6 +102,10 @@ export function draftFromProduct(p: ProductView): ProductDraft {
     allowsMultipleColors: p.allowsMultipleColors,
     leadTimeMinDays: p.leadTimeMinDays != null ? String(p.leadTimeMinDays) : "",
     leadTimeMaxDays: p.leadTimeMaxDays != null ? String(p.leadTimeMaxDays) : "",
+    weightGrams: String(p.weightGrams ?? DEFAULT_PACKAGE.weightGrams),
+    heightCm: String(p.heightCm ?? DEFAULT_PACKAGE.heightCm),
+    widthCm: String(p.widthCm ?? DEFAULT_PACKAGE.widthCm),
+    lengthCm: String(p.lengthCm ?? DEFAULT_PACKAGE.lengthCm),
     tag: p.tag ?? "",
     description: p.description,
     detailsText: p.details.join("\n"),

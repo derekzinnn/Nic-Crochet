@@ -28,6 +28,10 @@ function toView(p: DbProduct): ProductView {
     allowsMultipleColors: p.allowsMultipleColors,
     leadTimeMinDays: p.leadTimeMinDays,
     leadTimeMaxDays: p.leadTimeMaxDays,
+    weightGrams: p.weightGrams,
+    heightCm: p.heightCm,
+    widthCm: p.widthCm,
+    lengthCm: p.lengthCm,
     colorPrimary: swatch.primary,
     colorSecondary: swatch.secondary,
   };

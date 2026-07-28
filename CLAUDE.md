@@ -170,6 +170,38 @@ pixel on a production stack, and makes real the functionality the prototype fake
     "+ Nova peça". **Verified** in-browser: Roupa wizard (Tamanhos step), /roupas
     vs /colecao split (8 vs 1), size picker + cart + checkout; `tsc`/`build` clean.
 
+- [x] **Phase 13 — CEP lookup + shipping (frete) at checkout** ✅
+  - Customer must **calculate freight before checkout**. `ShippingBox` in the
+    cart drawer: masked CEP input (`00000-000`) + "Calcular frete" → server action
+    `calculateShipping(cep, lines)` (`src/app/actions/shipping.ts`). Flow: quick
+    format check → **ViaCEP** address lookup (cheap fail path) → **Melhor Envio**
+    shipment quote. Token stays server-side.
+  - `src/lib/shipping.ts` = client-safe types + CEP helpers + `cartSignature`;
+    `src/lib/melhor-envio.ts` (`server-only`) = ViaCEP + Melhor Envio calls +
+    single-package builder (v1: sum weights, stack heights, max footprint, clamp
+    to Correios minimums; dims read per-product from DB, default-filled).
+  - **Checkout gate**: "Finalizar pelo WhatsApp" is a disabled `<button>` until a
+    valid option is picked; the quote is stored with the cart **signature** it was
+    quoted for — any item/qty change flips it stale ("Sua sacola mudou — recalcule
+    o frete"), re-locks the button, and drops the freight from the total. WhatsApp
+    message now carries subtotal + chosen option (name/company/price/prazo) +
+    city/UF/CEP + grand total.
+  - **Melhor Envio status = SANDBOX + graceful fallback.** No token yet: with
+    `MELHOR_ENVIO_TOKEN` empty the quote returns a clearly-labeled **simulated**
+    estimate (weight/region-based) so checkout works pre-launch; "Frete estimado —
+    a Nic confirma no WhatsApp" is shown. Set the token for real sandbox quotes,
+    then switch `MELHOR_ENVIO_BASE_URL` + a production token at launch.
+  - **New `Product` fields** (with bag defaults, editable in the wizard's *Entrega*
+    step): `weightGrams 350`, `heightCm 12`, `widthCm 22`, `lengthCm 28`.
+  - **New env vars**: `SHIPPING_ORIGIN_CEP` (Pelotas — set to `96030-740`),
+    `MELHOR_ENVIO_TOKEN` (empty for now), `MELHOR_ENVIO_BASE_URL`
+    (sandbox default), `MELHOR_ENVIO_USER_AGENT`. Documented in `.env.example`.
+  - **Verified** in-browser (Browser pane): real ViaCEP resolve `96030-740 →
+    Pelotas/RS`, PAC/SEDEX options with cheapest preselected, totals + WhatsApp
+    link with freight; qty change → stale note + re-locked button + freight
+    dropped from total; not-found CEP (`99999-999`) → inline error, no options.
+    `tsc` clean. Photos also recompressed on upload (WebP ≤1400px) as a perf pass.
+
 ## Project layout
 
 ```
@@ -209,9 +241,22 @@ Plus all `src/**` listed above.
 
 ## Next step
 
-**Phases 1–6 complete; live Supabase DB + Storage wired.** The whole app is
-functional: storefront, cart, custom orders, admin auth, product CRUD, and real
-photo uploads. Before launch: set a real admin password (`npm run admin:hash`)
-and swap any remaining placeholder contact values. Next & final: Phase 7 —
-deploy to the OCI VPS (PM2 + Caddy, prod env, `sharp`). GitHub:
-`derekzinnn/Nic-Crochet` (`main`).
+**Phases 1–13 complete; live Supabase DB + Storage wired.** The whole app is
+functional: storefront, cart, custom orders, admin auth, product CRUD, real
+photo uploads (auto-compressed to WebP), and **CEP + shipping calculation at
+checkout** (ViaCEP + Melhor Envio, sandbox/simulated for now).
+
+**Before launch:**
+1. **Melhor Envio → production.** Create the account, generate a token, set
+   `MELHOR_ENVIO_TOKEN`; test in **sandbox** first, then flip
+   `MELHOR_ENVIO_BASE_URL=https://melhorenvio.com.br` with a production token.
+   Until a token is set, freight is a labeled *simulated* estimate.
+2. **Confirm the origin CEP** — currently `SHIPPING_ORIGIN_CEP=96030-740`
+   (Pelotas, provided by Nic); double-check it's the real ship-from address.
+3. Set a real admin password (`npm run admin:hash`) and swap any remaining
+   placeholder contact values; get the real supplier yarn-color list.
+4. Optionally tune per-product shipping dimensions in the wizard (defaults are a
+   typical bag: 350 g · 12×22×28 cm).
+
+Final: Phase 7 — deploy to the OCI VPS (PM2/Docker + Caddy, prod env, `sharp`).
+GitHub: `derekzinnn/Nic-Crochet` (`main`).

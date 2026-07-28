@@ -1,15 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useCart, selectCount, selectTotalCents } from "@/components/cart/cart-store";
+import {
+  useCart,
+  selectCount,
+  selectTotalCents,
+  useShippingSelection,
+} from "@/components/cart/cart-store";
 import { brl } from "@/lib/format";
 import { whatsappLink } from "@/lib/config";
 import { colorNames } from "@/lib/custom-order";
 import { resolveYarnColors } from "@/lib/yarn-colors";
+import { formatCep, optionDeliveryLabel, type ShippingAddress, type ShippingOption } from "@/lib/shipping";
 import type { CartItem } from "@/lib/types";
 import ProductMedia from "@/components/product/ProductMedia";
+import ShippingBox from "@/components/cart/ShippingBox";
 
-function buildCheckoutMessage(items: CartItem[], totalCents: number): string {
+function buildCheckoutMessage(
+  items: CartItem[],
+  productCents: number,
+  ship: { option: ShippingOption; address: ShippingAddress },
+): string {
   const lines = items.map((i) => {
     const parts = [colorNames(i.selectedColors), i.selectedSize ? `tam. ${i.selectedSize}` : ""]
       .filter(Boolean)
@@ -17,14 +28,17 @@ function buildCheckoutMessage(items: CartItem[], totalCents: number): string {
     const name = parts ? `${i.name} — ${parts}` : i.name;
     return `• ${i.qty}x ${name} — ${brl(i.priceCents * i.qty)}`;
   });
+  const { option, address } = ship;
+  const company = option.company ? ` (${option.company})` : "";
   return [
     "Olá, Nic! 🌿 Quero finalizar meu pedido:",
     "",
     ...lines,
     "",
-    `Total: ${brl(totalCents)}`,
-    "",
-    "Pode me passar frete e prazo?",
+    `Subtotal: ${brl(productCents)}`,
+    `Frete: ${option.name}${company} — ${brl(option.priceCents)} · ${optionDeliveryLabel(option.deliveryDays)}`,
+    `Entrega: ${address.city}/${address.uf} · CEP ${formatCep(address.cep)}`,
+    `Total: ${brl(productCents + option.priceCents)}`,
   ].join("\n");
 }
 
@@ -37,10 +51,13 @@ export default function CartDrawer() {
   const increment = useCart((s) => s.increment);
   const decrement = useCart((s) => s.decrement);
   const remove = useCart((s) => s.remove);
+  const { valid: shippingValid, selectedOption, quote } = useShippingSelection();
 
   if (!isOpen) return null;
 
   const empty = items.length === 0;
+  const canCheckout = shippingValid && !!selectedOption;
+  const grandTotalCents = totalCents + (selectedOption?.priceCents ?? 0);
 
   return (
     <div className="fixed inset-0 z-[100]">
@@ -157,21 +174,53 @@ export default function CartDrawer() {
 
         {!empty && (
           <div className="px-[26px] py-[22px] border-t border-line-divider bg-sand">
-            <div className="flex justify-between items-baseline mb-[6px]">
-              <span className="text-[13px] tracking-[0.1em] uppercase text-muted-soft">Subtotal</span>
-              <span className="font-serif text-[30px] text-ink">{brl(totalCents)}</span>
+            <ShippingBox />
+
+            <div className="border-t border-line-divider pt-3 mb-[14px]">
+              <div className="flex justify-between items-baseline text-[13px] text-muted-soft">
+                <span>Subtotal</span>
+                <span className="text-ink font-semibold">{brl(totalCents)}</span>
+              </div>
+              <div className="flex justify-between items-baseline text-[13px] text-muted-soft mt-[6px]">
+                <span>Frete</span>
+                <span className="text-ink font-semibold">
+                  {selectedOption ? brl(selectedOption.priceCents) : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-baseline mt-[10px]">
+                <span className="text-[13px] tracking-[0.1em] uppercase text-muted-soft">Total</span>
+                <span className="font-serif text-[30px] text-ink">{brl(grandTotalCents)}</span>
+              </div>
             </div>
-            <p className="text-[12px] text-muted-soft mb-4">
-              Frete e prazo combinados no checkout via WhatsApp.
-            </p>
-            <a
-              href={whatsappLink(buildCheckoutMessage(items, totalCents))}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center bg-ink text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase hover:bg-sage hover:-translate-y-[2px] transition-[background-color,transform] duration-300"
-            >
-              Finalizar pelo WhatsApp
-            </a>
+
+            {canCheckout && selectedOption && quote ? (
+              <a
+                href={whatsappLink(
+                  buildCheckoutMessage(items, totalCents, {
+                    option: selectedOption,
+                    address: quote.address,
+                  }),
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center bg-ink text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase hover:bg-sage hover:-translate-y-[2px] transition-[background-color,transform] duration-300"
+              >
+                Finalizar pelo WhatsApp
+              </a>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  disabled
+                  className="block w-full text-center bg-ink/40 text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase cursor-not-allowed"
+                >
+                  Finalizar pelo WhatsApp
+                </button>
+                <p className="text-[12px] text-muted-soft mt-[10px] text-center">
+                  Calcule o frete acima para finalizar o pedido.
+                </p>
+              </>
+            )}
           </div>
         )}
       </aside>
