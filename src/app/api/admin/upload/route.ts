@@ -14,6 +14,41 @@ const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 // iPhone originals to a couple hundred KB — the whole point of this route.
 const MAX_EDGE = 1400;
 const WEBP_QUALITY = 80;
+// Cards/modal use a fixed 3:4 box with object-cover, so any non-3:4 photo gets
+// cropped. iPhone portraits are already 3:4 (untouched); off-ratio shots are
+// padded onto a 3:4 cream canvas so the whole piece stays visible, never cropped.
+const TARGET_RATIO = 3 / 4; // width / height
+const PAD_BG = { r: 251, g: 248, b: 241 }; // site cream (#FBF8F1)
+
+/** Resize within MAX_EDGE, pad to a 3:4 canvas, and encode to WebP. */
+async function toStorageWebp(input: Buffer): Promise<Buffer> {
+  const resized = await sharp(input)
+    .rotate() // bake in EXIF orientation before it's dropped
+    .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
+    .toBuffer();
+
+  const meta = await sharp(resized).metadata();
+  const w = meta.width ?? 0;
+  const h = meta.height ?? 0;
+  const ratio = h > 0 ? w / h : TARGET_RATIO;
+
+  let canvasW = w;
+  let canvasH = h;
+  if (ratio > TARGET_RATIO)
+    canvasH = Math.round(w / TARGET_RATIO); // too wide → pad top/bottom
+  else if (ratio < TARGET_RATIO) canvasW = Math.round(h * TARGET_RATIO); // too tall → pad sides
+
+  const top = Math.floor((canvasH - h) / 2);
+  const bottom = canvasH - h - top;
+  const left = Math.floor((canvasW - w) / 2);
+  const right = canvasW - w - left;
+
+  let pipe = sharp(resized);
+  if (top || bottom || left || right) {
+    pipe = pipe.extend({ top, bottom, left, right, background: PAD_BG });
+  }
+  return pipe.webp({ quality: WEBP_QUALITY }).toBuffer();
+}
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -39,15 +74,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Imagem muito grande (máx. 12 MB)." }, { status: 400 });
   }
 
-  // Resize + re-encode to WebP. `rotate()` with no args bakes in the EXIF
-  // orientation so iPhone portraits don't come out sideways once EXIF is dropped.
   let optimized: Buffer;
   try {
-    optimized = await sharp(Buffer.from(await file.arrayBuffer()))
-      .rotate()
-      .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
-      .webp({ quality: WEBP_QUALITY })
-      .toBuffer();
+    optimized = await toStorageWebp(Buffer.from(await file.arrayBuffer()));
   } catch {
     return NextResponse.json({ error: "Não foi possível processar a imagem." }, { status: 400 });
   }
