@@ -174,7 +174,11 @@ export default function CartDrawer() {
 
         {!empty && (
           <div className="px-[26px] py-[22px] border-t border-line-divider bg-sand">
-            <ShippingBox />
+            {/* Only the freight block scrolls: the total and the checkout button
+                below stay pinned, however many carriers come back. */}
+            <div className="max-h-[42vh] overflow-y-auto">
+              <ShippingBox />
+            </div>
 
             <div className="border-t border-line-divider pt-3 mb-[14px]">
               <div className="flex justify-between items-baseline text-[13px] text-muted-soft">

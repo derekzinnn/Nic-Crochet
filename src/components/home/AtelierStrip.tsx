@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function AtelierStrip() {
   return (
-    <section className="relative px-[clamp(20px,5vw,64px)] py-[clamp(80px,11vw,150px)] bg-sage-deep text-[#F3F0E4] overflow-hidden">
+    <section className="relative px-[clamp(20px,5vw,64px)] py-[clamp(56px,7vw,96px)] bg-sage-deep text-[#F3F0E4] overflow-hidden">
       <div
         data-parallax="0.05"
         className="absolute -top-[90px] right-[6%] w-[340px] h-[340px] rounded-full"
@@ -37,13 +37,13 @@ export default function AtelierStrip() {
         <div
           data-reveal
           data-delay="120"
-          className="relative aspect-[5/6] rounded-[180px_18px_180px_18px] overflow-hidden shadow-[0_40px_90px_-40px_rgba(0,0,0,.5)]"
+          className="relative aspect-[5/6] w-full max-w-[400px] max-h-[62vh] mx-auto rounded-[180px_18px_180px_18px] overflow-hidden shadow-[0_40px_90px_-40px_rgba(0,0,0,.5)]"
         >
           <Image
             src="/nic-atelier.jpg"
             alt="Nic, fundadora e artesã do ateliê"
             fill
-            sizes="(max-width: 880px) 90vw, 42vw"
+            sizes="(max-width: 880px) 90vw, 400px"
             className="object-cover"
           />
         </div>

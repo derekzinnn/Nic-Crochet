@@ -76,22 +76,21 @@ export async function getAllProducts(): Promise<ProductView[]> {
   );
 }
 
-export async function getFeaturedProducts(limit = 3): Promise<ProductView[]> {
+/**
+ * Home's "As mais queridas do ateliê" strip: the most recently registered
+ * pieces, newest first (per Nic's request — the last piece she cadastra shows
+ * up first). The `featured` ★ flag is not used here; it drives the hero photo
+ * (`getHeroProduct`). Sold pieces are hidden, as everywhere in the storefront.
+ */
+export async function getLatestProducts(limit = 5): Promise<ProductView[]> {
   return withFallback(
-    cached(["featured", String(limit)], async () => {
-      const featured = await prisma.product.findMany({
-        where: { featured: true, status: { not: "SOLD" } },
+    cached(["latest", String(limit)], async () => {
+      const latest = await prisma.product.findMany({
+        where: { status: { not: "SOLD" } },
         orderBy: { createdAt: "desc" },
         take: limit,
       });
-      if (featured.length >= limit) return featured.map(toView);
-      // Top up with most-recent available pieces if not enough are flagged.
-      const fill = await prisma.product.findMany({
-        where: { featured: false, status: { not: "SOLD" } },
-        orderBy: { createdAt: "desc" },
-        take: limit - featured.length,
-      });
-      return [...featured, ...fill].map(toView);
+      return latest.map(toView);
     }),
     seedProducts.slice(0, limit),
   );

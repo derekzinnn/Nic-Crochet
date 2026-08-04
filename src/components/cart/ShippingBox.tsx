@@ -18,6 +18,9 @@ import { brl } from "@/lib/format";
  * server action, and drives the cart-store shipping state. The checkout button
  * (in CartDrawer) stays blocked until a valid option is selected here.
  */
+/** Melhor Envio returns a dozen carriers; show the cheapest few by default. */
+const TOP_OPTIONS = 3;
+
 export default function ShippingBox() {
   const items = useCart((s) => s.items);
   const cep = useCart((s) => s.cep);
@@ -30,6 +33,7 @@ export default function ShippingBox() {
   const { quote, valid, stale } = useShippingSelection();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   const onCalc = async () => {
     if (!isValidCep(cep) || loading) return;
@@ -39,6 +43,7 @@ export default function ShippingBox() {
     try {
       const res = await calculateShipping(cep, lines);
       if (res.ok) {
+        setShowAll(false); // a new quote collapses back to the cheapest few
         setQuote(
           { address: res.address, options: res.options, simulated: res.simulated },
           cartSignature(items),
@@ -57,6 +62,19 @@ export default function ShippingBox() {
 
   const cepOk = isValidCep(cep);
   const showResult = valid && quote;
+
+  // Options come sorted by price. Collapsed, we show the cheapest few — plus the
+  // selected one, so a choice made while expanded never disappears from view.
+  const allOptions = quote?.options ?? [];
+  const collapsed = !showAll && allOptions.length > TOP_OPTIONS;
+  let visibleOptions = allOptions;
+  if (collapsed) {
+    visibleOptions = allOptions.slice(0, TOP_OPTIONS);
+    const selected = allOptions.find((o) => o.id === selectedOptionId);
+    if (selected && !visibleOptions.includes(selected)) {
+      visibleOptions = [...visibleOptions, selected];
+    }
+  }
 
   return (
     <div className="mb-4">
@@ -111,9 +129,14 @@ export default function ShippingBox() {
       )}
 
       {showResult && (
-        <div className="mt-3 flex flex-col gap-2">
-          {quote.options.map((o) => {
+        <div
+          className={`mt-3 flex flex-col gap-2 ${
+            showAll ? "max-h-[240px] overflow-y-auto pr-1" : ""
+          }`}
+        >
+          {visibleOptions.map((o, idx) => {
             const active = o.id === selectedOptionId;
+            const cheapest = o.id === allOptions[0]?.id;
             return (
               <button
                 key={o.id}
@@ -138,8 +161,13 @@ export default function ShippingBox() {
                       {o.name}
                       {o.company ? <span className="text-muted-soft font-normal"> · {o.company}</span> : null}
                     </span>
-                    <span className="block text-[12px] text-muted-soft">
+                    <span className="flex items-center gap-[6px] text-[12px] text-muted-soft">
                       {optionDeliveryLabel(o.deliveryDays)}
+                      {cheapest && (
+                        <span className="text-[10px] tracking-[0.1em] uppercase text-sage-deep bg-sage/15 rounded-[20px] px-[6px] py-[1px]">
+                          mais barato
+                        </span>
+                      )}
                     </span>
                   </span>
                 </span>
@@ -155,6 +183,18 @@ export default function ShippingBox() {
             </p>
           )}
         </div>
+      )}
+
+      {showResult && allOptions.length > TOP_OPTIONS && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="mt-2 text-[12px] text-sage hover:text-sage-deep underline transition-colors"
+        >
+          {showAll
+            ? "Ver menos opções"
+            : `Ver todas as ${allOptions.length} opções de frete`}
+        </button>
       )}
     </div>
   );
