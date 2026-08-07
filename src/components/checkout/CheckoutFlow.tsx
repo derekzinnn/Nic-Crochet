@@ -8,7 +8,7 @@ import { brl } from "@/lib/format";
 import { pickup } from "@/lib/config";
 import { colorNames } from "@/lib/custom-order";
 import { isValidEmail, type CreateOrderInput } from "@/lib/checkout";
-import { createOrder } from "@/app/actions/orders";
+import { createOrder, startPayment } from "@/app/actions/orders";
 
 type Step = "entrega" | "dados" | "pagamento";
 const STEPS: { key: Step; label: string }[] = [
@@ -122,15 +122,28 @@ export default function CheckoutFlow() {
     };
     try {
       const res = await createOrder(payload);
-      if (res.ok) {
-        clear();
-        setPlacedId(res.orderId);
-      } else {
+      if (!res.ok) {
         setError(res.error);
+        setPlacing(false);
+        return;
       }
+      // Order is placed (PENDING). Start payment: redirect to Mercado Pago when
+      // it's configured, otherwise fall back to the "registered" confirmation.
+      const pay = await startPayment(res.orderId);
+      if (!pay.ok) {
+        setError(pay.error);
+        setPlacing(false);
+        return;
+      }
+      if (pay.redirectUrl) {
+        window.location.href = pay.redirectUrl; // to Mercado Pago (page navigates away)
+        return;
+      }
+      clear();
+      setPlacedId(res.orderId);
+      setPlacing(false);
     } catch {
       setError("Não foi possível registrar o pedido agora. Tente novamente.");
-    } finally {
       setPlacing(false);
     }
   };
@@ -367,7 +380,7 @@ export default function CheckoutFlow() {
               </button>
             </div>
             <p className="text-[11px] text-muted-faint text-center">
-              Pagamento via Mercado Pago (Pix, cartão ou boleto) — em ativação.
+              Pagamento seguro via Mercado Pago — Pix, cartão ou boleto.
             </p>
           </div>
         )}

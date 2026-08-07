@@ -4,6 +4,8 @@ import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { isValidEmail, type CreateOrderInput, type CreateOrderResult } from "@/lib/checkout";
+import { colorNames } from "@/lib/custom-order";
+import { createPreference, isMercadoPagoConfigured } from "@/lib/mercado-pago";
 import type { OrderItemSnapshot } from "@/lib/types";
 
 /**
@@ -94,5 +96,54 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       ok: false,
       error: "Não foi possível registrar o pedido agora. Tente novamente em instantes.",
     };
+  }
+}
+
+export type StartPaymentResult =
+  | { ok: true; redirectUrl: string | null } // null = MP not configured (stub flow)
+  | { ok: false; error: string };
+
+/**
+ * Start payment for a placed (PENDING) order: create a Mercado Pago Checkout Pro
+ * preference and return its redirect URL. When no MP token is configured yet,
+ * returns redirectUrl:null so the checkout can fall back to the "registered,
+ * payment pending" screen.
+ */
+export async function startPayment(orderId: string): Promise<StartPaymentResult> {
+  if (!isMercadoPagoConfigured()) return { ok: true, redirectUrl: null };
+
+  try {
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) return { ok: false, error: "Pedido não encontrado." };
+    if (order.status !== "PENDING") return { ok: false, error: "Este pedido já foi processado." };
+
+    const items = (order.items as unknown as OrderItemSnapshot[]) ?? [];
+    const pref = await createPreference({
+      orderId: order.id,
+      items: items.map((it) => {
+        const extras = [
+          colorNames(it.selectedColors),
+          it.selectedSize ? `tam. ${it.selectedSize}` : "",
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        return {
+          title: extras ? `${it.name} (${extras})` : it.name,
+          quantity: it.qty,
+          unitPriceCents: it.unitPriceCents,
+        };
+      }),
+      shippingCents: order.shippingCents,
+      payer: { name: order.customerName, email: order.customerEmail },
+    });
+    if (!pref.ok) return { ok: false, error: pref.error };
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { mpPreferenceId: pref.preferenceId },
+    });
+    return { ok: true, redirectUrl: pref.redirectUrl };
+  } catch {
+    return { ok: false, error: "Não foi possível iniciar o pagamento agora." };
   }
 }
