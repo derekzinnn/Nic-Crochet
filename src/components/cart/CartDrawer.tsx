@@ -8,51 +8,10 @@ import {
   useShippingSelection,
 } from "@/components/cart/cart-store";
 import { brl } from "@/lib/format";
-import { whatsappLink, pickup } from "@/lib/config";
 import { colorNames } from "@/lib/custom-order";
 import { resolveYarnColors } from "@/lib/yarn-colors";
-import {
-  formatCep,
-  optionDeliveryLabel,
-  type DeliveryMethod,
-  type ShippingAddress,
-  type ShippingOption,
-} from "@/lib/shipping";
-import type { CartItem } from "@/lib/types";
 import ProductMedia from "@/components/product/ProductMedia";
 import ShippingBox from "@/components/cart/ShippingBox";
-
-function buildCheckoutMessage(
-  items: CartItem[],
-  productCents: number,
-  ship: { method: DeliveryMethod; option: ShippingOption; address: ShippingAddress | null },
-): string {
-  const lines = items.map((i) => {
-    const parts = [colorNames(i.selectedColors), i.selectedSize ? `tam. ${i.selectedSize}` : ""]
-      .filter(Boolean)
-      .join(", ");
-    const name = parts ? `${i.name} — ${parts}` : i.name;
-    return `• ${i.qty}x ${name} — ${brl(i.priceCents * i.qty)}`;
-  });
-  const { method, option, address } = ship;
-  const company = option.company ? ` (${option.company})` : "";
-  const deliveryLines =
-    method === "pickup"
-      ? [`Entrega: Retirada no ateliê — ${pickup.address}, ${pickup.city}`]
-      : [
-          `Frete: ${option.name}${company} — ${brl(option.priceCents)} · ${optionDeliveryLabel(option.deliveryDays)}`,
-          address ? `Entrega: ${address.city}/${address.uf} · CEP ${formatCep(address.cep)}` : "",
-        ].filter(Boolean);
-  return [
-    "Olá, Nic! 🌿 Quero finalizar meu pedido:",
-    "",
-    ...lines,
-    "",
-    `Subtotal: ${brl(productCents)}`,
-    ...deliveryLines,
-    `Total: ${brl(productCents + option.priceCents)}`,
-  ].join("\n");
-}
 
 export default function CartDrawer() {
   const isOpen = useCart((s) => s.isOpen);
@@ -63,8 +22,7 @@ export default function CartDrawer() {
   const increment = useCart((s) => s.increment);
   const decrement = useCart((s) => s.decrement);
   const remove = useCart((s) => s.remove);
-  const deliveryMethod = useCart((s) => s.deliveryMethod);
-  const { valid: shippingValid, selectedOption, quote } = useShippingSelection();
+  const { valid: shippingValid, selectedOption } = useShippingSelection();
 
   if (!isOpen) return null;
 
@@ -210,21 +168,14 @@ export default function CartDrawer() {
               </div>
             </div>
 
-            {canCheckout && selectedOption ? (
-              <a
-                href={whatsappLink(
-                  buildCheckoutMessage(items, totalCents, {
-                    method: deliveryMethod,
-                    option: selectedOption,
-                    address: quote?.address ?? null,
-                  }),
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
+            {canCheckout ? (
+              <Link
+                href="/checkout"
+                onClick={close}
                 className="block w-full text-center bg-ink text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase hover:bg-sage hover:-translate-y-[2px] transition-[background-color,transform] duration-300"
               >
-                Finalizar pelo WhatsApp
-              </a>
+                Finalizar compra
+              </Link>
             ) : (
               <>
                 <button
@@ -232,10 +183,10 @@ export default function CartDrawer() {
                   disabled
                   className="block w-full text-center bg-ink/40 text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase cursor-not-allowed"
                 >
-                  Finalizar pelo WhatsApp
+                  Finalizar compra
                 </button>
                 <p className="text-[12px] text-muted-soft mt-[10px] text-center">
-                  Calcule o frete acima para finalizar o pedido.
+                  Escolha a entrega acima para finalizar o pedido.
                 </p>
               </>
             )}

@@ -87,6 +87,48 @@ export type ProductView = {
   colorSecondary: string;
 };
 
+export type OrderStatus = "PENDING" | "PAID" | "CANCELLED" | "FULFILLED";
+
+export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
+  PENDING: "Aguardando pagamento",
+  PAID: "Pago",
+  CANCELLED: "Cancelado",
+  FULFILLED: "Concluído",
+};
+
+/** Immutable snapshot of a purchased line, stored on the Order as JSON. */
+export type OrderItemSnapshot = {
+  productId: string;
+  name: string;
+  slug: string;
+  selectedColors: string[];
+  selectedSize: string | null;
+  qty: number;
+  unitPriceCents: number;
+};
+
+/** Serializable order shape for the admin Pedidos panel. */
+export type OrderView = {
+  id: string;
+  items: OrderItemSnapshot[];
+  subtotalCents: number;
+  deliveryMethod: "shipping" | "pickup";
+  shippingCents: number;
+  shippingLabel: string | null;
+  shippingDays: number | null;
+  cep: string | null;
+  street: string | null;
+  district: string | null;
+  city: string | null;
+  uf: string | null;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string | null;
+  totalCents: number;
+  status: OrderStatus;
+  createdAt: string; // ISO
+};
+
 export type CartItem = {
   /** Unique per line: productId + chosen colors (same bag, different colors = 2 lines). */
   lineId: string;

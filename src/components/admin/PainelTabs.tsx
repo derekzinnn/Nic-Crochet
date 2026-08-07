@@ -13,6 +13,11 @@ const TABS: { href: string; label: string; match: (p: string) => boolean }[] = [
       /\/painel\/[^/]+\/editar/.test(p),
   },
   {
+    href: "/area-da-nic/painel/pedidos",
+    label: "Pedidos",
+    match: (p) => p.startsWith("/area-da-nic/painel/pedidos"),
+  },
+  {
     href: "/area-da-nic/painel/encomendas",
     label: "Encomendas",
     match: (p) => p.startsWith("/area-da-nic/painel/encomendas"),
@@ -24,13 +29,23 @@ const TABS: { href: string; label: string; match: (p: string) => boolean }[] = [
   },
 ];
 
-export default function PainelTabs({ newOrders = 0 }: { newOrders?: number }) {
+export default function PainelTabs({
+  newOrders = 0,
+  openOrders = 0,
+}: {
+  newOrders?: number;
+  openOrders?: number;
+}) {
   const pathname = usePathname();
+
+  const badge = (label: string) =>
+    label === "Encomendas" ? newOrders : label === "Pedidos" ? openOrders : 0;
 
   return (
     <nav className="flex gap-1 border-b border-line-card mb-8">
       {TABS.map((t) => {
         const active = t.match(pathname);
+        const count = badge(t.label);
         return (
           <Link
             key={t.href}
@@ -42,9 +57,9 @@ export default function PainelTabs({ newOrders = 0 }: { newOrders?: number }) {
             }`}
           >
             {t.label}
-            {t.label === "Encomendas" && newOrders > 0 && (
+            {count > 0 && (
               <span className="ml-2 inline-grid place-items-center min-w-[18px] h-[18px] px-[5px] bg-sage text-cream rounded-full text-[10px] font-bold align-middle">
-                {newOrders}
+                {count}
               </span>
             )}
           </Link>
