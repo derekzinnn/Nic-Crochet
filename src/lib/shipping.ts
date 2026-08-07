@@ -17,6 +17,9 @@ export const DEFAULT_PACKAGE = {
 /** Correios accepts no smaller than this per side (cm) — clamp to avoid API errors. */
 export const MIN_DIMENSIONS = { heightCm: 2, widthCm: 11, lengthCm: 16 } as const;
 
+/** How the customer receives the order: shipped, or picked up at the atelier. */
+export type DeliveryMethod = "shipping" | "pickup";
+
 export type ShippingAddress = {
   cep: string; // digits only
   city: string;

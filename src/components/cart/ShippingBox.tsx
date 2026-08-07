@@ -11,6 +11,7 @@ import {
   formatCep,
 } from "@/lib/shipping";
 import { brl } from "@/lib/format";
+import { pickup } from "@/lib/config";
 
 /**
  * CEP entry + freight calculation inside the cart drawer. Resolves the address
@@ -23,6 +24,8 @@ const TOP_OPTIONS = 3;
 
 export default function ShippingBox() {
   const items = useCart((s) => s.items);
+  const deliveryMethod = useCart((s) => s.deliveryMethod);
+  const setDeliveryMethod = useCart((s) => s.setDeliveryMethod);
   const cep = useCart((s) => s.cep);
   const setCep = useCart((s) => s.setCep);
   const setQuote = useCart((s) => s.setQuote);
@@ -78,6 +81,42 @@ export default function ShippingBox() {
 
   return (
     <div className="mb-4">
+      {/* Delivery method: ship it, or pick up at the atelier (free). */}
+      <div className="flex gap-1 p-1 rounded-[12px] bg-cream border border-line-input mb-3">
+        {([
+          ["shipping", "Enviar"],
+          ["pickup", "Retirar no ateliê"],
+        ] as const).map(([m, label]) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setDeliveryMethod(m)}
+            className={`flex-1 rounded-[9px] py-[8px] text-[12px] tracking-[0.04em] transition-colors ${
+              deliveryMethod === m ? "bg-ink text-cream" : "text-muted-nav hover:text-ink"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {deliveryMethod === "pickup" && (
+        <div className="rounded-[12px] border border-sage/40 bg-sage/[0.08] px-[14px] py-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-semibold text-ink">Retirada no ateliê</span>
+            <span className="text-[13px] font-semibold text-sage-deep">Grátis</span>
+          </div>
+          <p className="text-[12px] text-muted-soft mt-1">
+            {pickup.address} — {pickup.city}
+          </p>
+          <p className="text-[11px] text-muted-faint mt-[6px]">
+            A Nic combina o horário de retirada com você após a compra.
+          </p>
+        </div>
+      )}
+
+      {deliveryMethod === "shipping" && (
+        <>
       <div className="flex items-baseline justify-between mb-[7px]">
         <span className="text-[12px] tracking-[0.14em] uppercase text-muted-soft">Frete</span>
         {showResult && (
@@ -195,6 +234,8 @@ export default function ShippingBox() {
             ? "Ver menos opções"
             : `Ver todas as ${allOptions.length} opções de frete`}
         </button>
+      )}
+        </>
       )}
     </div>
   );

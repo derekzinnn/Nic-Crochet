@@ -95,3 +95,53 @@ model Task {
   @@index([done])
   @@index([dueDate])
 }
+
+enum DeliveryMethod {
+  SHIPPING // envio pelos Correios/transportadora
+  PICKUP // retirada local no ateliê
+}
+
+enum OrderStatus {
+  PENDING // criado, aguardando pagamento
+  PAID // pagamento confirmado (webhook do Mercado Pago)
+  CANCELLED // cancelado / expirado / pagamento recusado
+  FULFILLED // enviado ou retirado (Nic marcou como concluído)
+}
+
+// A placed order. Items are stored as a JSON snapshot so the order stays
+// immutable even if the product is later edited or deleted.
+model Order {
+  id            String         @id @default(cuid())
+  items         Json // [{ productId, name, selectedColors[], selectedSize, qty, unitPriceCents }]
+  subtotalCents Int
+
+  deliveryMethod DeliveryMethod
+  shippingCents  Int            @default(0)
+  shippingLabel  String? // ex: "PAC (Correios)"
+  shippingDays   Int?
+
+  // Shipping address (null for PICKUP)
+  cep        String?
+  street     String? // logradouro + número + complemento
+  district   String? // bairro
+  city       String?
+  uf         String?
+
+  // Customer contact
+  customerName  String
+  customerEmail String
+  customerPhone String?
+
+  totalCents Int
+  status     OrderStatus @default(PENDING)
+
+  // Mercado Pago references (filled once payment starts / confirms)
+  mpPreferenceId String?
+  mpPaymentId    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

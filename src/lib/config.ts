@@ -12,6 +12,12 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 };
 
+/** Local pickup (retirada) at the atelier — offered as a free delivery option. */
+export const pickup = {
+  address: process.env.NEXT_PUBLIC_PICKUP_ADDRESS ?? "Rua Ulysses Batinga, 1655",
+  city: process.env.NEXT_PUBLIC_PICKUP_CITY ?? "Pelotas, RS",
+};
+
 /** Build a wa.me link with a URL-encoded prefilled message. */
 export function whatsappLink(message: string, number = siteConfig.whatsappNumber): string {
   const digits = number.replace(/\D/g, "");

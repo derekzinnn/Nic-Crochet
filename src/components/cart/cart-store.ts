@@ -3,7 +3,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, ProductView } from "@/lib/types";
-import { cartSignature, type ShippingAddress, type ShippingOption } from "@/lib/shipping";
+import {
+  cartSignature,
+  type DeliveryMethod,
+  type ShippingAddress,
+  type ShippingOption,
+} from "@/lib/shipping";
 
 /** A successful shipping quote, kept in the cart with the signature it was for. */
 type ShippingQuote = {
@@ -16,6 +21,8 @@ type CartState = {
   items: CartItem[];
   isOpen: boolean;
   hydrated: boolean;
+  // Delivery: ship it, or pick up at the atelier (free, no CEP needed).
+  deliveryMethod: DeliveryMethod;
   // Shipping (freight) state — see ShippingBox / CartDrawer.
   cep: string;
   quote: ShippingQuote | null;
@@ -29,6 +36,7 @@ type CartState = {
   decrement: (lineId: string) => void;
   remove: (lineId: string) => void;
   clear: () => void;
+  setDeliveryMethod: (method: DeliveryMethod) => void;
   setCep: (cep: string) => void;
   setQuote: (quote: ShippingQuote, sig: string) => void;
   selectOption: (id: string) => void;
@@ -46,6 +54,7 @@ export const useCart = create<CartState>()(
       items: [],
       isOpen: false,
       hydrated: false,
+      deliveryMethod: "shipping",
       cep: "",
       quote: null,
       quoteSig: null,
@@ -90,6 +99,7 @@ export const useCart = create<CartState>()(
       remove: (lineId) => set((s) => ({ items: s.items.filter((i) => i.lineId !== lineId) })),
       clear: () =>
         set({ items: [], quote: null, quoteSig: null, selectedOptionId: null }),
+      setDeliveryMethod: (method) => set({ deliveryMethod: method }),
       setCep: (cep) => set({ cep }),
       // Store the quote + the cart signature it was calculated for, and default
       // the selection to the cheapest option (options arrive price-sorted).
@@ -128,6 +138,7 @@ export const useCart = create<CartState>()(
       },
       partialize: (s) => ({
         items: s.items,
+        deliveryMethod: s.deliveryMethod,
         cep: s.cep,
         quote: s.quote,
         quoteSig: s.quoteSig,
@@ -145,18 +156,34 @@ export const selectCount = (s: CartState) => s.items.reduce((n, i) => n + i.qty,
 export const selectTotalCents = (s: CartState) =>
   s.items.reduce((n, i) => n + i.qty * i.priceCents, 0);
 
+/** Synthetic "option" representing free local pickup, so totals/checkout are uniform. */
+export const PICKUP_OPTION: ShippingOption = {
+  id: "pickup",
+  name: "Retirada local",
+  company: "",
+  priceCents: 0,
+  deliveryDays: 0,
+};
+
 /**
- * Derived shipping state shared by ShippingBox (input) and CartDrawer (totals +
- * checkout gate). `valid` is true only while the quote matches the current cart;
- * `stale` flags a quote that a cart change has invalidated (needs recalculation).
+ * Derived delivery state shared by ShippingBox (input) and CartDrawer (totals +
+ * checkout gate). For PICKUP it's always valid and free. For SHIPPING, `valid`
+ * is true only while the quote matches the current cart; `stale` flags a quote a
+ * cart change has invalidated (needs recalculation).
  */
 export function useShippingSelection() {
   const items = useCart((s) => s.items);
+  const deliveryMethod = useCart((s) => s.deliveryMethod);
   const quote = useCart((s) => s.quote);
   const quoteSig = useCart((s) => s.quoteSig);
   const selectedOptionId = useCart((s) => s.selectedOptionId);
 
   const sig = cartSignature(items);
+
+  if (deliveryMethod === "pickup") {
+    return { quote, sig, stale: false, valid: true, selectedOption: PICKUP_OPTION };
+  }
+
   const stale = !!quote && quoteSig !== sig;
   const valid = !!quote && !stale;
   const selectedOption =

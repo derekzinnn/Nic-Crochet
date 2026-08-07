@@ -8,10 +8,16 @@ import {
   useShippingSelection,
 } from "@/components/cart/cart-store";
 import { brl } from "@/lib/format";
-import { whatsappLink } from "@/lib/config";
+import { whatsappLink, pickup } from "@/lib/config";
 import { colorNames } from "@/lib/custom-order";
 import { resolveYarnColors } from "@/lib/yarn-colors";
-import { formatCep, optionDeliveryLabel, type ShippingAddress, type ShippingOption } from "@/lib/shipping";
+import {
+  formatCep,
+  optionDeliveryLabel,
+  type DeliveryMethod,
+  type ShippingAddress,
+  type ShippingOption,
+} from "@/lib/shipping";
 import type { CartItem } from "@/lib/types";
 import ProductMedia from "@/components/product/ProductMedia";
 import ShippingBox from "@/components/cart/ShippingBox";
@@ -19,7 +25,7 @@ import ShippingBox from "@/components/cart/ShippingBox";
 function buildCheckoutMessage(
   items: CartItem[],
   productCents: number,
-  ship: { option: ShippingOption; address: ShippingAddress },
+  ship: { method: DeliveryMethod; option: ShippingOption; address: ShippingAddress | null },
 ): string {
   const lines = items.map((i) => {
     const parts = [colorNames(i.selectedColors), i.selectedSize ? `tam. ${i.selectedSize}` : ""]
@@ -28,16 +34,22 @@ function buildCheckoutMessage(
     const name = parts ? `${i.name} — ${parts}` : i.name;
     return `• ${i.qty}x ${name} — ${brl(i.priceCents * i.qty)}`;
   });
-  const { option, address } = ship;
+  const { method, option, address } = ship;
   const company = option.company ? ` (${option.company})` : "";
+  const deliveryLines =
+    method === "pickup"
+      ? [`Entrega: Retirada no ateliê — ${pickup.address}, ${pickup.city}`]
+      : [
+          `Frete: ${option.name}${company} — ${brl(option.priceCents)} · ${optionDeliveryLabel(option.deliveryDays)}`,
+          address ? `Entrega: ${address.city}/${address.uf} · CEP ${formatCep(address.cep)}` : "",
+        ].filter(Boolean);
   return [
     "Olá, Nic! 🌿 Quero finalizar meu pedido:",
     "",
     ...lines,
     "",
     `Subtotal: ${brl(productCents)}`,
-    `Frete: ${option.name}${company} — ${brl(option.priceCents)} · ${optionDeliveryLabel(option.deliveryDays)}`,
-    `Entrega: ${address.city}/${address.uf} · CEP ${formatCep(address.cep)}`,
+    ...deliveryLines,
     `Total: ${brl(productCents + option.priceCents)}`,
   ].join("\n");
 }
@@ -51,6 +63,7 @@ export default function CartDrawer() {
   const increment = useCart((s) => s.increment);
   const decrement = useCart((s) => s.decrement);
   const remove = useCart((s) => s.remove);
+  const deliveryMethod = useCart((s) => s.deliveryMethod);
   const { valid: shippingValid, selectedOption, quote } = useShippingSelection();
 
   if (!isOpen) return null;
@@ -197,12 +210,13 @@ export default function CartDrawer() {
               </div>
             </div>
 
-            {canCheckout && selectedOption && quote ? (
+            {canCheckout && selectedOption ? (
               <a
                 href={whatsappLink(
                   buildCheckoutMessage(items, totalCents, {
+                    method: deliveryMethod,
                     option: selectedOption,
-                    address: quote.address,
+                    address: quote?.address ?? null,
                   }),
                 )}
                 target="_blank"
