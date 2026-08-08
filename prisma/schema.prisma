@@ -96,6 +96,16 @@ model Task {
   @@index([dueDate])
 }
 
+// Single-row health record for the Melhor Envio quote call, so the admin panel
+// can warn Nic that freight is failing (usually an expired token) instead of her
+// finding out through a customer complaint.
+model ShippingHealth {
+  id                String    @id @default("singleton")
+  lastSuccessAt     DateTime?
+  lastFailureAt     DateTime?
+  lastFailureReason String?
+}
+
 enum DeliveryMethod {
   SHIPPING // envio pelos Correios/transportadora
   PICKUP // retirada local no ateliê

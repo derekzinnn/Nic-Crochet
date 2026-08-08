@@ -85,6 +85,32 @@ export async function getOpenOrdersCount(): Promise<number> {
   );
 }
 
+export type ShippingHealthView = {
+  /** No Melhor Envio token set — quotes are the labeled simulated estimate. */
+  simulated: boolean;
+  /** True when the last quote attempt failed and nothing succeeded after it. */
+  failing: boolean;
+  lastFailureAt: string | null;
+  lastFailureReason: string | null;
+};
+
+/** Freight status for the admin banner — is it simulated, or currently broken? */
+export async function getShippingHealth(): Promise<ShippingHealthView> {
+  const simulated = !process.env.MELHOR_ENVIO_TOKEN;
+  const row = await safe(
+    async () => prisma.shippingHealth.findUnique({ where: { id: "singleton" } }),
+    null,
+  );
+  const failing =
+    !!row?.lastFailureAt && (!row.lastSuccessAt || row.lastFailureAt > row.lastSuccessAt);
+  return {
+    simulated,
+    failing,
+    lastFailureAt: row?.lastFailureAt ? row.lastFailureAt.toISOString() : null,
+    lastFailureReason: row?.lastFailureReason ?? null,
+  };
+}
+
 export async function getTasks(): Promise<TaskView[]> {
   return safe(
     async () =>

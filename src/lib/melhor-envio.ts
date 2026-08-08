@@ -133,6 +133,27 @@ export type QuoteResult =
   | { ok: true; options: ShippingOption[]; simulated: boolean }
   | { ok: false; reason: "unreachable" | "no_options" };
 
+/**
+ * Record whether the real quote worked, so the admin panel can warn Nic that
+ * freight is broken (an expired Melhor Envio token is the usual cause). Failures
+ * here must never break the customer's request, hence the swallowed catch.
+ */
+async function recordHealth(ok: boolean, reason?: string): Promise<void> {
+  try {
+    const now = new Date();
+    const data = ok
+      ? { lastSuccessAt: now }
+      : { lastFailureAt: now, lastFailureReason: reason ?? "falha desconhecida" };
+    await prisma.shippingHealth.upsert({
+      where: { id: "singleton" },
+      update: data,
+      create: { id: "singleton", ...data },
+    });
+  } catch {
+    /* health tracking is best-effort */
+  }
+}
+
 type MelhorEnvioService = {
   id: number | string;
   name?: string;
@@ -181,10 +202,21 @@ export async function quoteShipping(destCep: string, box: PackageBox): Promise<Q
       },
       MELHOR_ENVIO_TIMEOUT_MS,
     );
-    if (!res.ok) return { ok: false, reason: "unreachable" };
+    if (!res.ok) {
+      // 401/403 is almost always an expired or wrong-environment token.
+      const hint =
+        res.status === 401 || res.status === 403
+          ? `Token recusado (HTTP ${res.status}) — provavelmente expirado.`
+          : `Melhor Envio respondeu HTTP ${res.status}.`;
+      await recordHealth(false, hint);
+      return { ok: false, reason: "unreachable" };
+    }
 
     const services = (await res.json()) as MelhorEnvioService[];
-    if (!Array.isArray(services)) return { ok: false, reason: "unreachable" };
+    if (!Array.isArray(services)) {
+      await recordHealth(false, "Resposta inesperada do Melhor Envio.");
+      return { ok: false, reason: "unreachable" };
+    }
 
     const options: ShippingOption[] = services
       .filter((s) => !s.error && s.price != null && s.delivery_time != null)
@@ -198,9 +230,15 @@ export async function quoteShipping(destCep: string, box: PackageBox): Promise<Q
       .filter((o) => Number.isFinite(o.priceCents) && o.priceCents > 0)
       .sort((a, b) => a.priceCents - b.priceCents);
 
-    if (options.length === 0) return { ok: false, reason: "no_options" };
+    if (options.length === 0) {
+      // Not a config problem — the carriers just don't serve this destination.
+      await recordHealth(true);
+      return { ok: false, reason: "no_options" };
+    }
+    await recordHealth(true);
     return { ok: true, options, simulated: false };
   } catch {
+    await recordHealth(false, "Não foi possível contatar o Melhor Envio (timeout/rede).");
     return { ok: false, reason: "unreachable" };
   }
 }

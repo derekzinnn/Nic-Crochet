@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { logoutAction } from "@/app/area-da-nic/actions";
-import { getNewOrdersCount, getOpenOrdersCount } from "@/lib/admin-data";
+import { getNewOrdersCount, getOpenOrdersCount, getShippingHealth } from "@/lib/admin-data";
 import PainelTabs from "@/components/admin/PainelTabs";
+import ShippingAlert from "@/components/admin/ShippingAlert";
 
 /** Shared admin shell: sticky "Painel da Nic" bar over a light panel background. */
 export default async function PainelLayout({ children }: { children: React.ReactNode }) {
-  const [newOrders, openOrders] = await Promise.all([getNewOrdersCount(), getOpenOrdersCount()]);
+  const [newOrders, openOrders, shippingHealth] = await Promise.all([
+    getNewOrdersCount(),
+    getOpenOrdersCount(),
+    getShippingHealth(),
+  ]);
   return (
     <div className="min-h-screen bg-panel">
       <header className="sticky top-0 z-50 flex items-center justify-between gap-[14px] px-[clamp(20px,4vw,40px)] h-[62px] bg-[rgba(251,248,241,.94)] backdrop-blur-[10px] border-b border-line-card">
@@ -39,6 +44,7 @@ export default async function PainelLayout({ children }: { children: React.React
 
       <div className="max-w-[1020px] mx-auto px-[clamp(20px,4vw,40px)] pt-[28px] pb-[90px]">
         <PainelTabs newOrders={newOrders} openOrders={openOrders} />
+        <ShippingAlert health={shippingHealth} />
         {children}
       </div>
     </div>
