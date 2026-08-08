@@ -19,6 +19,16 @@ export function isEmailConfigured(): boolean {
   return !!process.env.RESEND_API_KEY;
 }
 
+/**
+ * Whether to also e-mail the customer. Off by default: with Resend's sandbox
+ * sender (onboarding@resend.dev) only the account's own address is deliverable,
+ * so customer mail would just bounce. Set SEND_CUSTOMER_EMAIL="true" once a
+ * sender domain is verified and ORDER_FROM_EMAIL points at it.
+ */
+export function isCustomerEmailEnabled(): boolean {
+  return process.env.SEND_CUSTOMER_EMAIL === "true";
+}
+
 /** Where Nic receives order notifications. */
 function notifyEmail(): string {
   return process.env.ORDER_NOTIFY_EMAIL || "nic.crochet1@gmail.com";

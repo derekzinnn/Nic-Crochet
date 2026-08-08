@@ -2,7 +2,12 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getPayment } from "@/lib/mercado-pago";
-import { sendOrderEmailToNic, sendOrderEmailToCustomer, isEmailConfigured } from "@/lib/email";
+import {
+  sendOrderEmailToNic,
+  sendOrderEmailToCustomer,
+  isEmailConfigured,
+  isCustomerEmailEnabled,
+} from "@/lib/email";
 import type { OrderItemSnapshot, OrderStatus, OrderView } from "@/lib/types";
 
 /** Map a Mercado Pago payment status to our OrderStatus (null = leave as-is). */
@@ -72,7 +77,11 @@ async function notifyPaidOrder(orderId: string, order: DbOrder): Promise<void> {
     if (claimed.count === 0) return; // someone already sent them
 
     const view = toOrderView(order);
-    await Promise.all([sendOrderEmailToNic(view), sendOrderEmailToCustomer(view)]);
+    // Nic always gets the alert; the customer copy waits on a verified sender.
+    await Promise.all([
+      sendOrderEmailToNic(view),
+      ...(isCustomerEmailEnabled() ? [sendOrderEmailToCustomer(view)] : []),
+    ]);
   } catch (err) {
     console.warn("[order-payment] falha ao notificar por e-mail:", (err as Error).message);
   }
