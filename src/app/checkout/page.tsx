@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function CheckoutPage() {
   return (
     <section className="min-h-screen bg-cream px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px]">
-      <div className="max-w-[720px] mx-auto">
+      <div className="max-w-[1000px] mx-auto">
         <CheckoutFlow />
       </div>
     </section>

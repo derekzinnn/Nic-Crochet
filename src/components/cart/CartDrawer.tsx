@@ -1,17 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import {
-  useCart,
-  selectCount,
-  selectTotalCents,
-  useShippingSelection,
-} from "@/components/cart/cart-store";
+import { useCart, selectCount, selectTotalCents } from "@/components/cart/cart-store";
 import { brl } from "@/lib/format";
 import { colorNames } from "@/lib/custom-order";
 import { resolveYarnColors } from "@/lib/yarn-colors";
 import ProductMedia from "@/components/product/ProductMedia";
-import ShippingBox from "@/components/cart/ShippingBox";
 
 export default function CartDrawer() {
   const isOpen = useCart((s) => s.isOpen);
@@ -22,13 +16,10 @@ export default function CartDrawer() {
   const increment = useCart((s) => s.increment);
   const decrement = useCart((s) => s.decrement);
   const remove = useCart((s) => s.remove);
-  const { valid: shippingValid, selectedOption } = useShippingSelection();
 
   if (!isOpen) return null;
 
   const empty = items.length === 0;
-  const canCheckout = shippingValid && !!selectedOption;
-  const grandTotalCents = totalCents + (selectedOption?.priceCents ?? 0);
 
   return (
     <div className="fixed inset-0 z-[100]">
@@ -143,53 +134,26 @@ export default function CartDrawer() {
           )}
         </div>
 
+        {/* The drawer is just a bag review: items + subtotal. Delivery, freight
+            and payment all live on the /checkout page. */}
         {!empty && (
           <div className="px-[26px] py-[22px] border-t border-line-divider bg-sand">
-            {/* Only the freight block scrolls: the total and the checkout button
-                below stay pinned, however many carriers come back. */}
-            <div className="max-h-[42vh] overflow-y-auto">
-              <ShippingBox />
+            <div className="flex justify-between items-baseline mb-[6px]">
+              <span className="text-[13px] tracking-[0.1em] uppercase text-muted-soft">
+                Subtotal
+              </span>
+              <span className="font-serif text-[30px] text-ink">{brl(totalCents)}</span>
             </div>
-
-            <div className="border-t border-line-divider pt-3 mb-[14px]">
-              <div className="flex justify-between items-baseline text-[13px] text-muted-soft">
-                <span>Subtotal</span>
-                <span className="text-ink font-semibold">{brl(totalCents)}</span>
-              </div>
-              <div className="flex justify-between items-baseline text-[13px] text-muted-soft mt-[6px]">
-                <span>Frete</span>
-                <span className="text-ink font-semibold">
-                  {selectedOption ? brl(selectedOption.priceCents) : "—"}
-                </span>
-              </div>
-              <div className="flex justify-between items-baseline mt-[10px]">
-                <span className="text-[13px] tracking-[0.1em] uppercase text-muted-soft">Total</span>
-                <span className="font-serif text-[30px] text-ink">{brl(grandTotalCents)}</span>
-              </div>
-            </div>
-
-            {canCheckout ? (
-              <Link
-                href="/checkout"
-                onClick={close}
-                className="block w-full text-center bg-ink text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase hover:bg-sage hover:-translate-y-[2px] transition-[background-color,transform] duration-300"
-              >
-                Finalizar compra
-              </Link>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  disabled
-                  className="block w-full text-center bg-ink/40 text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase cursor-not-allowed"
-                >
-                  Finalizar compra
-                </button>
-                <p className="text-[12px] text-muted-soft mt-[10px] text-center">
-                  Escolha a entrega acima para finalizar o pedido.
-                </p>
-              </>
-            )}
+            <p className="text-[12px] text-muted-soft mb-4">
+              Frete e forma de pagamento na próxima etapa.
+            </p>
+            <Link
+              href="/checkout"
+              onClick={close}
+              className="block w-full text-center bg-ink text-cream rounded-pill py-4 text-[13px] tracking-[0.14em] uppercase hover:bg-sage hover:-translate-y-[2px] transition-[background-color,transform] duration-300"
+            >
+              Avançar
+            </Link>
           </div>
         )}
       </aside>
