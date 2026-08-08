@@ -35,6 +35,27 @@ export function leadTimeLabel(min: number | null, max: number | null): string | 
   return null;
 }
 
+/**
+ * Progressive Brazilian phone mask for a typing input:
+ * "53999998888" -> "(53) 9 9999-8888" (mobile, 11 digits)
+ * "5333334444"  -> "(53) 3333-4444"   (landline, 10 digits)
+ * Partial input formats as far as it can, so the caret never fights the mask.
+ */
+export function maskPhone(input: string): string {
+  const d = input.replace(/\D/g, "").slice(0, 11);
+  if (d.length === 0) return "";
+  if (d.length <= 2) return `(${d}`;
+
+  const ddd = d.slice(0, 2);
+  const rest = d.slice(2);
+  if (rest.length <= 4) return `(${ddd}) ${rest}`;
+  if (rest.length <= 8) {
+    return `(${ddd}) ${rest.slice(0, rest.length - 4)}-${rest.slice(rest.length - 4)}`;
+  }
+  // 9 digits: split off the leading 9 the way Brazilians write it.
+  return `(${ddd}) ${rest.slice(0, 1)} ${rest.slice(1, 5)}-${rest.slice(5)}`;
+}
+
 /** Slugify a product name into a URL-safe, accent-free slug. */
 export function slugify(name: string): string {
   return name

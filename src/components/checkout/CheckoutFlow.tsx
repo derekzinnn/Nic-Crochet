@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCart, selectTotalCents, useShippingSelection } from "@/components/cart/cart-store";
 import ShippingBox from "@/components/cart/ShippingBox";
 import ProductMedia from "@/components/product/ProductMedia";
-import { brl } from "@/lib/format";
+import { brl, maskPhone } from "@/lib/format";
 import { pickup } from "@/lib/config";
 import { colorNames } from "@/lib/custom-order";
 import { resolveYarnColors } from "@/lib/yarn-colors";
@@ -387,7 +387,9 @@ export default function CheckoutFlow() {
                       <span className={label}>WhatsApp / telefone</span>
                       <input
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(maskPhone(e.target.value))}
+                        inputMode="tel"
+                        maxLength={17}
                         className={input}
                         placeholder="(53) 9 9999-9999"
                       />
