@@ -183,15 +183,14 @@ export default function CheckoutFlow() {
 
   return (
     <div>
-      <div className="text-center mb-7">
-        <div className="text-[12px] tracking-[0.34em] uppercase text-sage mb-3">Checkout</div>
-        <h1 className="font-serif font-normal text-[clamp(30px,5vw,48px)] leading-none text-ink">
+      {/* Title left, steps centered — keeps the whole flow above the fold. */}
+      <div className="flex items-center justify-between gap-6 flex-wrap mb-7">
+        <h1 className="font-serif font-normal text-[clamp(26px,3.4vw,38px)] leading-none text-ink">
           Finalizar compra
         </h1>
-      </div>
 
-      {/* stepper — completed steps are clickable to go back */}
-      <div className="flex items-center justify-center gap-2 mb-7 flex-wrap">
+        {/* stepper — completed steps are clickable to go back */}
+        <div className="flex items-center gap-2 flex-wrap mx-auto">
         {STEPS.map((s, i) => {
           const done = i < stepIndex;
           const current = i === stepIndex;
@@ -228,6 +227,7 @@ export default function CheckoutFlow() {
             </div>
           );
         })}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 min-[900px]:grid-cols-[1fr_320px] gap-6 items-start">
