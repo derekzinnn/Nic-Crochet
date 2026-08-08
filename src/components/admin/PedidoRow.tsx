@@ -1,12 +1,17 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ORDER_STATUS_LABEL, type OrderStatus, type OrderView } from "@/lib/types";
 import { brl } from "@/lib/format";
+import { formatCep } from "@/lib/shipping";
 import { resolveYarnColors } from "@/lib/yarn-colors";
-import { setOrderStatus, deleteOrder } from "@/app/area-da-nic/painel/pedidos/actions";
+import {
+  setOrderStatus,
+  setOrderTracking,
+  deleteOrder,
+} from "@/app/area-da-nic/painel/pedidos/actions";
 import ConfirmDelete from "@/components/admin/ConfirmDelete";
 
 const STATUS_PILL: Record<OrderStatus, string> = {
@@ -21,6 +26,7 @@ const STATUS_ORDER: OrderStatus[] = ["PENDING", "PAID", "FULFILLED", "CANCELLED"
 export default function PedidoRow({ order }: { order: OrderView }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [tracking, setTracking] = useState(order.trackingCode ?? "");
   const created = new Date(order.createdAt).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -39,6 +45,13 @@ export default function PedidoRow({ order }: { order: OrderView }) {
       await deleteOrder(order.id);
       router.refresh();
       toast.success("Pedido excluído.");
+    });
+
+  const onSaveTracking = () =>
+    startTransition(async () => {
+      await setOrderTracking(order.id, tracking);
+      router.refresh();
+      toast.success("Código de rastreio salvo — a cliente já vê no link dela.");
     });
 
   return (
@@ -103,11 +116,37 @@ export default function PedidoRow({ order }: { order: OrderView }) {
               {order.district ? `, ${order.district}` : ""}
             </div>
             <div>
-              {order.city}/{order.uf} · CEP {order.cep}
+              {order.city}/{order.uf} · CEP {formatCep(order.cep ?? "")}
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <input
+                value={tracking}
+                onChange={(e) => setTracking(e.target.value)}
+                placeholder="Código de rastreio"
+                aria-label="Código de rastreio"
+                className="flex-1 min-w-0 bg-white border border-line-input rounded-[10px] px-3 py-[7px] text-[13px] text-ink outline-none focus:border-sage"
+              />
+              <button
+                type="button"
+                onClick={onSaveTracking}
+                disabled={pending || tracking.trim() === (order.trackingCode ?? "")}
+                className="flex-none text-[11px] tracking-[0.08em] uppercase text-ink border border-line-input rounded-[20px] px-[14px] py-[7px] hover:border-sage hover:text-sage transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Salvar
+              </button>
             </div>
           </div>
         )}
       </div>
+
+      <a
+        href={`/pedido/${order.publicToken}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block mt-3 text-[12px] text-sage hover:text-sage-deep underline"
+      >
+        Ver a página de acompanhamento da cliente →
+      </a>
 
       {/* Totals */}
       <div className="mt-3 flex items-baseline justify-end gap-4 text-[13px] text-muted-soft">

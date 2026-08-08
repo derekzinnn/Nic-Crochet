@@ -22,6 +22,8 @@ export async function POST() {
 
   const sample: OrderView = {
     id: "pedidoexemplo0001",
+    publicToken: "exemplo-token-de-teste",
+    trackingCode: null,
     items: [
       {
         productId: "sample-1",

@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -67,8 +68,13 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     }
     const total = subtotal + shippingCents;
 
+    // 32 hex chars of CSPRNG — the public tracking link is the only thing
+    // guarding this order's details, so it must not be guessable.
+    const publicToken = randomBytes(16).toString("hex");
+
     const order = await prisma.order.create({
       data: {
+        publicToken,
         items: items as unknown as Prisma.InputJsonValue,
         subtotalCents: subtotal,
         deliveryMethod: method,
@@ -86,11 +92,11 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         totalCents: total,
         status: "PENDING",
       },
-      select: { id: true },
+      select: { id: true, publicToken: true },
     });
 
     revalidatePath("/area-da-nic/painel/pedidos");
-    return { ok: true, orderId: order.id };
+    return { ok: true, orderId: order.id, trackingToken: order.publicToken };
   } catch {
     return {
       ok: false,

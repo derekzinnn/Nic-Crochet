@@ -11,6 +11,14 @@ export async function setOrderStatus(id: string, status: OrderStatus): Promise<v
   revalidatePath("/area-da-nic/painel/pedidos");
 }
 
+/** Postal tracking code — shows up on the customer's tracking page. */
+export async function setOrderTracking(id: string, code: string): Promise<void> {
+  await requireAdmin();
+  const trackingCode = code.trim().toUpperCase() || null;
+  await prisma.order.update({ where: { id }, data: { trackingCode } });
+  revalidatePath("/area-da-nic/painel/pedidos");
+}
+
 export async function deleteOrder(id: string): Promise<void> {
   await requireAdmin();
   await prisma.order.delete({ where: { id } });

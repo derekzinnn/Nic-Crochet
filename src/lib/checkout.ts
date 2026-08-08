@@ -37,7 +37,7 @@ export type CreateOrderInput = {
 };
 
 export type CreateOrderResult =
-  | { ok: true; orderId: string }
+  | { ok: true; orderId: string; trackingToken: string }
   | { ok: false; error: string };
 
 /** Basic e-mail shape check (client + server share it). */

@@ -112,6 +112,10 @@ enum OrderStatus {
 // immutable even if the product is later edited or deleted.
 model Order {
   id            String         @id @default(cuid())
+  // Unguessable token for the public "acompanhe seu pedido" link — set in code
+  // from crypto random bytes (the cuid default only backfills existing rows).
+  // The order id is never used for that link: ids appear in admin URLs.
+  publicToken   String         @unique @default(cuid())
   items         Json // [{ productId, name, selectedColors[], selectedSize, qty, unitPriceCents }]
   subtotalCents Int
 
@@ -119,6 +123,9 @@ model Order {
   shippingCents  Int            @default(0)
   shippingLabel  String? // ex: "PAC (Correios)"
   shippingDays   Int?
+
+  // Tracking code, filled by Nic once the parcel is posted (SHIPPING only).
+  trackingCode String?
 
   // Shipping address (null for PICKUP)
   cep        String?

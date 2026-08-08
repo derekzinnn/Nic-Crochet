@@ -62,6 +62,7 @@ export default function CheckoutFlow() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [placedId, setPlacedId] = useState<string | null>(null);
+  const [placedToken, setPlacedToken] = useState<string | null>(null);
 
   const shippingCents = selectedOption?.priceCents ?? 0;
   const totalCents = subtotalCents + shippingCents;
@@ -116,12 +117,22 @@ export default function CheckoutFlow() {
           Seu pedido <strong className="text-ink">#{placedId.slice(-6).toUpperCase()}</strong> foi
           registrado. A Nic vai confirmar os próximos passos com você por e-mail.
         </p>
-        <Link
-          href="/colecao"
-          className="btn-pill inline-block mt-7 bg-ink text-cream px-[28px] py-[14px] !text-[12px] hover:bg-sage"
-        >
-          Continuar navegando
-        </Link>
+        <div className="flex items-center justify-center gap-3 mt-7 flex-wrap">
+          {placedToken && (
+            <Link
+              href={`/pedido/${placedToken}`}
+              className="btn-pill inline-block bg-ink text-cream px-[28px] py-[14px] !text-[12px] hover:bg-sage"
+            >
+              Acompanhar pedido
+            </Link>
+          )}
+          <Link
+            href="/colecao"
+            className="btn-pill inline-block bg-transparent text-muted-nav border border-line-input px-[26px] py-[13px] !text-[12px] hover:border-sage hover:text-sage"
+          >
+            Continuar navegando
+          </Link>
+        </div>
       </div>
     );
   }
@@ -173,6 +184,7 @@ export default function CheckoutFlow() {
       }
       clear();
       setPlacedId(res.orderId);
+      setPlacedToken(res.trackingToken);
       setPlacing(false);
     } catch {
       setError("Não foi possível registrar o pedido agora. Tente novamente.");

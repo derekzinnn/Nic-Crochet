@@ -2,6 +2,8 @@ import "server-only";
 import { brl } from "@/lib/format";
 import { colorNames } from "@/lib/custom-order";
 import { pickup, siteConfig } from "@/lib/config";
+import { trackingUrl } from "@/lib/order-tracking";
+import { formatCep } from "@/lib/shipping";
 import type { OrderItemSnapshot, OrderView } from "@/lib/types";
 
 /**
@@ -97,7 +99,7 @@ function deliveryBlock(o: OrderView): string {
   return `<p style="font-size:14px;color:#3B3A2E;margin:0"><strong>${o.shippingLabel ?? "Envio"}</strong>
     ${o.shippingCents ? ` — ${brl(o.shippingCents)}` : ""}<br>
     <span style="color:#9A9580">${o.street ?? ""}${o.district ? `, ${o.district}` : ""}<br>
-    ${o.city ?? ""}/${o.uf ?? ""} · CEP ${o.cep ?? ""}</span></p>`;
+    ${o.city ?? ""}/${o.uf ?? ""} · CEP ${formatCep(o.cep ?? "")}</span></p>`;
 }
 
 function totals(o: OrderView): string {
@@ -157,6 +159,15 @@ export async function sendOrderEmailToCustomer(order: OrderView): Promise<boolea
     ${deliveryBlock(order)}
     ${totals(order)}
     <p style="font-size:14px;color:#3B3A2E;margin-top:18px">${next}</p>
+    <div style="margin-top:22px;text-align:center">
+      <a href="${trackingUrl(order.publicToken)}"
+         style="display:inline-block;background:#3B3A2E;color:#FBF8F1;text-decoration:none;padding:13px 26px;border-radius:30px;font-size:13px;letter-spacing:.08em;text-transform:uppercase">
+        Acompanhar meu pedido
+      </a>
+      <p style="font-size:11px;color:#9A9580;margin-top:10px">
+        Guarde este link — é por ele que você acompanha o pedido (não precisa de senha).
+      </p>
+    </div>
     <p style="font-size:12px;color:#9A9580;margin-top:18px">
       Dúvidas? É só responder este e-mail.
     </p>

@@ -110,6 +110,10 @@ export type OrderItemSnapshot = {
 /** Serializable order shape for the admin Pedidos panel. */
 export type OrderView = {
   id: string;
+  /** Token behind the public "acompanhe seu pedido" link. */
+  publicToken: string;
+  /** Postal tracking code, once Nic posts the parcel. */
+  trackingCode: string | null;
   items: OrderItemSnapshot[];
   subtotalCents: number;
   deliveryMethod: "shipping" | "pickup";

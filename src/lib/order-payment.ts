@@ -34,6 +34,8 @@ type DbOrder = Awaited<ReturnType<typeof prisma.order.findFirstOrThrow>>;
 function toOrderView(o: DbOrder): OrderView {
   return {
     id: o.id,
+    publicToken: o.publicToken,
+    trackingCode: o.trackingCode,
     items: (o.items as unknown as OrderItemSnapshot[]) ?? [],
     subtotalCents: o.subtotalCents,
     deliveryMethod: o.deliveryMethod === "PICKUP" ? "pickup" : "shipping",
