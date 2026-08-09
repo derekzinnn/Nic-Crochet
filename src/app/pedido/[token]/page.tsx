@@ -14,12 +14,37 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
-/** The customer-facing journey, in order. CANCELLED is handled separately. */
-const STEPS: { status: OrderStatus; label: string; hint: string }[] = [
-  { status: "PENDING", label: "Pagamento", hint: "Aguardando a confirmação do pagamento." },
-  { status: "PAID", label: "Em produção", hint: "Pagamento confirmado — a Nic já está cuidando da sua peça." },
-  { status: "FULFILLED", label: "A caminho", hint: "Pedido concluído — enviado ou retirado." },
-];
+/**
+ * The customer-facing journey. The third step reads differently for pickup
+ * ("pronta para retirar") than for shipping ("a caminho"). CANCELLED is handled
+ * separately below.
+ */
+function stepsFor(pickup: boolean): { status: OrderStatus; label: string; hint: string }[] {
+  return [
+    { status: "PENDING", label: "Pagamento", hint: "Aguardando a confirmação do pagamento." },
+    {
+      status: "PAID",
+      label: "Em produção",
+      hint: "Pagamento confirmado — a Nic já está cuidando da sua peça.",
+    },
+    pickup
+      ? {
+          status: "READY",
+          label: "Pronta",
+          hint: "Sua peça está pronta! Já pode retirar no ateliê — a Nic combina o horário com você.",
+        }
+      : {
+          status: "SHIPPED",
+          label: "A caminho",
+          hint: "Sua peça foi postada e está a caminho.",
+        },
+    {
+      status: "DELIVERED",
+      label: pickup ? "Retirada" : "Entregue",
+      hint: pickup ? "Pedido retirado. Obrigada! 💛" : "Pedido entregue. Obrigada! 💛",
+    },
+  ];
+}
 
 export default async function OrderTrackingPage({
   params,
@@ -33,7 +58,24 @@ export default async function OrderTrackingPage({
   const shortId = order.id.slice(-6).toUpperCase();
   const created = new Date(order.createdAt).toLocaleDateString("pt-BR");
   const cancelled = order.status === "CANCELLED";
-  const currentIndex = STEPS.findIndex((s) => s.status === order.status);
+
+  const isPickup = order.deliveryMethod === "pickup";
+  const STEPS = stepsFor(isPickup);
+  // How far along the order is. Ranked rather than matched by index because a
+  // shipping order passes through READY, which isn't one of its shown steps.
+  const RANK: Record<OrderStatus, number> = {
+    PENDING: 0,
+    PAID: 1,
+    READY: 2,
+    SHIPPED: 3,
+    DELIVERED: 4,
+    CANCELLED: 0,
+  };
+  const orderRank = RANK[order.status];
+  let currentIndex = 0;
+  STEPS.forEach((s, i) => {
+    if (RANK[s.status] <= orderRank) currentIndex = i;
+  });
 
   return (
     <section className="min-h-screen bg-cream px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px]">

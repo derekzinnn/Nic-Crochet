@@ -3,13 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ORDER_STATUS_LABEL, type OrderStatus, type OrderView } from "@/lib/types";
+import { orderStatusLabel, type OrderStatus, type OrderView } from "@/lib/types";
 import { brl } from "@/lib/format";
 import { formatCep } from "@/lib/shipping";
 import { resolveYarnColors } from "@/lib/yarn-colors";
 import {
   setOrderStatus,
   setOrderTracking,
+  syncOrderPayment,
   deleteOrder,
 } from "@/app/area-da-nic/painel/pedidos/actions";
 import ConfirmDelete from "@/components/admin/ConfirmDelete";
@@ -17,11 +18,11 @@ import ConfirmDelete from "@/components/admin/ConfirmDelete";
 const STATUS_PILL: Record<OrderStatus, string> = {
   PENDING: "bg-[#C9A85B]/15 text-[#9C7A2E] border-[#C9A85B]/40",
   PAID: "bg-sage/15 text-sage-deep border-sage/40",
-  FULFILLED: "bg-line-divider text-muted-soft border-line",
+  READY: "bg-[#6FA8B8]/15 text-[#3E7A8A] border-[#6FA8B8]/40",
+  SHIPPED: "bg-[#8B7BB8]/15 text-[#5F4F94] border-[#8B7BB8]/40",
+  DELIVERED: "bg-line-divider text-muted-soft border-line",
   CANCELLED: "bg-[#C06A4A]/12 text-[#C06A4A] border-[#C06A4A]/40",
 };
-
-const STATUS_ORDER: OrderStatus[] = ["PENDING", "PAID", "FULFILLED", "CANCELLED"];
 
 export default function PedidoRow({ order }: { order: OrderView }) {
   const router = useRouter();
@@ -33,11 +34,44 @@ export default function PedidoRow({ order }: { order: OrderView }) {
     year: "numeric",
   });
 
+  const isPickup = order.deliveryMethod === "pickup";
+  const paid = order.status !== "PENDING" && order.status !== "CANCELLED";
+
+  /** The next fulfilment step Nic can take, if any. Shipping gets an extra hop. */
+  const nextStep: { status: OrderStatus; label: string } | null = (() => {
+    if (!paid) return null;
+    if (order.status === "PAID") {
+      return isPickup
+        ? { status: "READY", label: "Marcar como disponível para retirada" }
+        : { status: "READY", label: "Marcar como pronta para envio" };
+    }
+    if (order.status === "READY") {
+      return isPickup
+        ? { status: "DELIVERED", label: "Marcar como retirada" }
+        : { status: "SHIPPED", label: "Marcar como enviada" };
+    }
+    if (order.status === "SHIPPED") return { status: "DELIVERED", label: "Marcar como entregue" };
+    return null; // DELIVERED — nothing left to do
+  })();
+
   const onStatus = (status: OrderStatus) =>
     startTransition(async () => {
-      await setOrderStatus(order.id, status);
+      try {
+        await setOrderStatus(order.id, status);
+        router.refresh();
+        toast.success("Pedido atualizado.");
+      } catch (e) {
+        toast.error((e as Error).message || "Não foi possível atualizar.");
+      }
+    });
+
+  const onSyncPayment = () =>
+    startTransition(async () => {
+      const res = await syncOrderPayment(order.id);
       router.refresh();
-      toast.success("Status do pedido atualizado.");
+      if (res.status === "PAID") toast.success(res.message);
+      else if (res.ok) toast.info(res.message);
+      else toast.error(res.message);
     });
 
   const onDelete = () =>
@@ -71,7 +105,7 @@ export default function PedidoRow({ order }: { order: OrderView }) {
         <span
           className={`text-[10px] tracking-[0.1em] uppercase font-semibold px-[10px] py-[5px] rounded-[20px] border ${STATUS_PILL[order.status]}`}
         >
-          {ORDER_STATUS_LABEL[order.status]}
+          {orderStatusLabel(order.status, order.deliveryMethod)}
         </span>
       </div>
 
@@ -157,19 +191,40 @@ export default function PedidoRow({ order }: { order: OrderView }) {
 
       {/* Actions */}
       <div className="flex items-center gap-2 mt-4 flex-wrap">
-        <select
-          value={order.status}
-          onChange={(e) => onStatus(e.target.value as OrderStatus)}
-          disabled={pending}
-          aria-label="Status do pedido"
-          className="bg-white border border-line-input rounded-[20px] text-muted-nav text-[12px] px-3 py-[7px] outline-none focus:border-sage cursor-pointer"
-        >
-          {STATUS_ORDER.map((s) => (
-            <option key={s} value={s}>
-              {ORDER_STATUS_LABEL[s]}
-            </option>
-          ))}
-        </select>
+        {/* Payment is never set by hand — we ask Mercado Pago. */}
+        {order.status === "PENDING" && (
+          <button
+            type="button"
+            onClick={onSyncPayment}
+            disabled={pending}
+            className="text-[12px] tracking-[0.06em] uppercase bg-ink text-cream rounded-[20px] px-[14px] py-[8px] hover:bg-sage transition-colors disabled:opacity-50"
+          >
+            {pending ? "Verificando…" : "Verificar pagamento"}
+          </button>
+        )}
+
+        {nextStep && (
+          <button
+            type="button"
+            onClick={() => onStatus(nextStep.status)}
+            disabled={pending}
+            className="text-[12px] tracking-[0.06em] uppercase bg-sage text-cream rounded-[20px] px-[14px] py-[8px] hover:bg-sage-deep transition-colors disabled:opacity-50"
+          >
+            {nextStep.label}
+          </button>
+        )}
+
+        {order.status === "DELIVERED" && (
+          <span className="text-[12px] text-muted-soft">
+            Pedido concluído {isPickup ? "(retirado)" : "(entregue)"} ✓
+          </span>
+        )}
+
+        {order.status === "CANCELLED" && (
+          <span className="text-[12px] text-muted-soft">
+            Pagamento não concluído — nada a fazer.
+          </span>
+        )}
 
         <ConfirmDelete
           title={`Excluir o pedido de ${order.customerName}?`}

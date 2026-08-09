@@ -111,11 +111,15 @@ enum DeliveryMethod {
   PICKUP // retirada local no ateliê
 }
 
+// Payment states (PENDING/PAID/CANCELLED) come from Mercado Pago and are never
+// set by hand. The fulfilment states after PAID are Nic's to advance.
 enum OrderStatus {
   PENDING // criado, aguardando pagamento
-  PAID // pagamento confirmado (webhook do Mercado Pago)
+  PAID // pagamento confirmado (Mercado Pago) — em produção
+  READY // pronta: disponível para retirada, ou embalada para envio
+  SHIPPED // postada (só envio) — com código de rastreio
+  DELIVERED // entregue ou retirada — pedido concluído
   CANCELLED // cancelado / expirado / pagamento recusado
-  FULFILLED // enviado ou retirado (Nic marcou como concluído)
 }
 
 // A placed order. Items are stored as a JSON snapshot so the order stays

@@ -99,6 +99,35 @@ export type MpPayment = {
   externalReference: string | null;
 };
 
+/**
+ * Find the payment Mercado Pago recorded for one of our orders. Used to sync a
+ * still-PENDING order on demand, so payment status never has to be set by hand
+ * (and so a missed webhook doesn't strand an order).
+ */
+export async function findPaymentByOrderId(orderId: string): Promise<MpPayment | null> {
+  try {
+    const res = await fetch(
+      `${MP_API}/v1/payments/search?external_reference=${encodeURIComponent(orderId)}&sort=date_created&criteria=desc`,
+      { headers: { Authorization: `Bearer ${accessToken()}` }, cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      results?: Array<{ id: number | string; status: string; external_reference?: string | null }>;
+    };
+    const results = data.results ?? [];
+    if (results.length === 0) return null;
+    // Prefer an approved payment if the customer retried after a failure.
+    const chosen = results.find((p) => p.status === "approved") ?? results[0];
+    return {
+      id: String(chosen.id),
+      status: chosen.status,
+      externalReference: chosen.external_reference ?? orderId,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /** Fetch a payment's authoritative status from Mercado Pago. */
 export async function getPayment(paymentId: string): Promise<MpPayment | null> {
   try {

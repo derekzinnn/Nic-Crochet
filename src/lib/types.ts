@@ -87,14 +87,44 @@ export type ProductView = {
   colorSecondary: string;
 };
 
-export type OrderStatus = "PENDING" | "PAID" | "CANCELLED" | "FULFILLED";
+export type OrderStatus =
+  | "PENDING"
+  | "PAID"
+  | "READY"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED";
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING: "Aguardando pagamento",
-  PAID: "Pago",
+  PAID: "Pago · em produção",
+  READY: "Pronta",
+  SHIPPED: "Enviada",
+  DELIVERED: "Concluído",
   CANCELLED: "Cancelado",
-  FULFILLED: "Concluído",
 };
+
+/**
+ * The same status reads differently depending on how the order is delivered —
+ * "Pronta" means "come pick it up" for pickup and "packed" for shipping.
+ */
+export function orderStatusLabel(
+  status: OrderStatus,
+  deliveryMethod: "shipping" | "pickup",
+): string {
+  const pickup = deliveryMethod === "pickup";
+  switch (status) {
+    case "READY":
+      return pickup ? "Disponível para retirada" : "Pronta para envio";
+    case "DELIVERED":
+      return pickup ? "Retirada" : "Entregue";
+    default:
+      return ORDER_STATUS_LABEL[status];
+  }
+}
+
+/** Statuses Nic can set by hand. Payment states come from Mercado Pago. */
+export const FULFILMENT_STATUSES: OrderStatus[] = ["PAID", "READY", "SHIPPED", "DELIVERED"];
 
 /** Immutable snapshot of a purchased line, stored on the Order as JSON. */
 export type OrderItemSnapshot = {
