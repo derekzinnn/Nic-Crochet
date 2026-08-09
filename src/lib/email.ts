@@ -15,6 +15,27 @@ import type { OrderItemSnapshot, OrderView } from "@/lib/types";
 
 const RESEND_API = "https://api.resend.com/emails";
 
+/**
+ * Escape anything that came from a customer before it goes into e-mail HTML.
+ * Checkout is public and unauthenticated, so name/address/phone are attacker
+ * controlled — unescaped they could inject markup (a fake "confirm here" link)
+ * into the very e-mail Nic trusts.
+ */
+function esc(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Escape for use inside an href/attribute, dropping non-http(s)/mailto URLs. */
+function escUrl(value: string): string {
+  const safe = /^(https?:|mailto:)/i.test(value) ? value : "";
+  return esc(safe);
+}
+
 export function isEmailConfigured(): boolean {
   return !!process.env.RESEND_API_KEY;
 }
@@ -90,7 +111,7 @@ function itemsTable(items: OrderItemSnapshot[]): string {
         .join(" · ");
       return `<tr>
         <td style="padding:8px 0;border-bottom:1px solid #EDE6D4;color:#3B3A2E;font-size:14px">
-          <strong>${it.qty}× ${it.name}</strong>${extras ? `<br><span style="color:#9A9580;font-size:12px">${extras}</span>` : ""}
+          <strong>${esc(it.qty)}× ${esc(it.name)}</strong>${extras ? `<br><span style="color:#9A9580;font-size:12px">${esc(extras)}</span>` : ""}
         </td>
         <td style="padding:8px 0;border-bottom:1px solid #EDE6D4;text-align:right;color:#6E7C48;font-size:14px;white-space:nowrap">
           ${brl(it.unitPriceCents * it.qty)}
@@ -106,10 +127,10 @@ function deliveryBlock(o: OrderView): string {
     return `<p style="font-size:14px;color:#3B3A2E;margin:0"><strong>Retirada no ateliê</strong><br>
       <span style="color:#9A9580">${pickup.address} — ${pickup.city}</span></p>`;
   }
-  return `<p style="font-size:14px;color:#3B3A2E;margin:0"><strong>${o.shippingLabel ?? "Envio"}</strong>
+  return `<p style="font-size:14px;color:#3B3A2E;margin:0"><strong>${esc(o.shippingLabel ?? "Envio")}</strong>
     ${o.shippingCents ? ` — ${brl(o.shippingCents)}` : ""}<br>
-    <span style="color:#9A9580">${o.street ?? ""}${o.district ? `, ${o.district}` : ""}<br>
-    ${o.city ?? ""}/${o.uf ?? ""} · CEP ${formatCep(o.cep ?? "")}</span></p>`;
+    <span style="color:#9A9580">${esc(o.street ?? "")}${o.district ? `, ${esc(o.district)}` : ""}<br>
+    ${esc(o.city ?? "")}/${esc(o.uf ?? "")} · CEP ${esc(formatCep(o.cep ?? ""))}</span></p>`;
 }
 
 function totals(o: OrderView): string {
@@ -138,9 +159,9 @@ export async function sendOrderEmailToNic(order: OrderView): Promise<boolean> {
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid #EDE6D4">
       <p style="font-size:13px;color:#9A9580;margin:0 0 4px">Cliente</p>
       <p style="font-size:14px;color:#3B3A2E;margin:0">
-        ${order.customerName}<br>
-        <a href="mailto:${order.customerEmail}" style="color:#6E7C48">${order.customerEmail}</a>
-        ${order.customerPhone ? `<br>${order.customerPhone}` : ""}
+        ${esc(order.customerName)}<br>
+        <a href="${escUrl(`mailto:${order.customerEmail}`)}" style="color:#6E7C48">${esc(order.customerEmail)}</a>
+        ${order.customerPhone ? `<br>${esc(order.customerPhone)}` : ""}
       </p>
     </div>
     <p style="font-size:12px;color:#9A9580;margin-top:20px">Veja tudo no painel: ${siteConfig.url}/area-da-nic/painel/pedidos</p>
@@ -162,7 +183,7 @@ export async function sendOrderEmailToCustomer(order: OrderView): Promise<boolea
   const html = wrap(`
     <h1 style="font-size:22px;color:#3B3A2E;margin:0 0 4px">Pagamento confirmado 💛</h1>
     <p style="font-size:14px;color:#3B3A2E;margin:0 0 16px">
-      Oi, ${order.customerName}! Recebemos seu pagamento — obrigada por levar uma peça feita à mão.
+      Oi, ${esc(order.customerName)}! Recebemos seu pagamento — obrigada por levar uma peça feita à mão.
       Seu pedido é o <strong>#${shortId(order.id)}</strong>.
     </p>
     ${itemsTable(order.items)}
@@ -170,7 +191,7 @@ export async function sendOrderEmailToCustomer(order: OrderView): Promise<boolea
     ${totals(order)}
     <p style="font-size:14px;color:#3B3A2E;margin-top:18px">${next}</p>
     <div style="margin-top:22px;text-align:center">
-      <a href="${trackingUrl(order.publicToken)}"
+      <a href="${escUrl(trackingUrl(order.publicToken))}"
          style="display:inline-block;background:#3B3A2E;color:#FBF8F1;text-decoration:none;padding:13px 26px;border-radius:30px;font-size:13px;letter-spacing:.08em;text-transform:uppercase">
         Acompanhar meu pedido
       </a>

@@ -40,7 +40,13 @@ export type CreateOrderResult =
   | { ok: true; orderId: string; trackingToken: string }
   | { ok: false; error: string };
 
-/** Basic e-mail shape check (client + server share it). */
+/**
+ * E-mail shape check (client + server share it). Deliberately excludes markup
+ * and quote characters: the address is echoed into order e-mails and a header
+ * field, so `<`, `>` and quotes have no business being in it.
+ */
 export function isValidEmail(email: string): boolean {
-  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
+  const value = email.trim();
+  if (value.length > 254) return false;
+  return /^[^@\s<>"'`\\]+@[^@\s<>"'`\\]+\.[^@\s<>"'`\\]{2,}$/.test(value);
 }
