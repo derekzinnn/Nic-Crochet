@@ -44,13 +44,25 @@ export default function ProductModal() {
         onClick={close}
         className="absolute inset-0 bg-[rgba(40,42,28,.5)] backdrop-blur-[4px] animate-fadeUp"
       />
+      {/* Fixed height on desktop: otherwise the grid row is sized by the text
+          column, so a bag with a long description got a tall photo and one
+          without a description got a squashed one. Now every product opens the
+          same size and long text scrolls inside its own column. */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label={product.name}
-        className="relative z-[2] w-[min(900px,100%)] max-h-[90vh] max-[880px]:max-h-[92vh] overflow-auto bg-cream rounded-[24px] shadow-[0_50px_110px_-40px_rgba(0,0,0,.5)] grid grid-cols-1 min-[881px]:grid-cols-2 animate-modalUp"
+        className="relative z-[2] w-[min(900px,100%)] max-h-[90vh] max-[880px]:max-h-[92vh] overflow-auto min-[881px]:overflow-hidden min-[881px]:h-[min(620px,86vh)] bg-cream rounded-[24px] shadow-[0_50px_110px_-40px_rgba(0,0,0,.5)] grid grid-cols-1 min-[881px]:grid-cols-2 animate-modalUp"
       >
-        <div className="relative min-h-[200px] aspect-[16/10] min-[881px]:aspect-auto min-[881px]:min-h-[340px]">
+        <button
+          onClick={close}
+          aria-label="Fechar"
+          className="absolute top-[18px] right-[18px] z-[3] w-[38px] h-[38px] rounded-full border border-line-input bg-cream/90 backdrop-blur-[2px] text-muted text-[17px] hover:bg-ink hover:text-cream hover:border-ink transition-colors"
+        >
+          ✕
+        </button>
+
+        <div className="relative min-h-[200px] aspect-[16/10] min-[881px]:aspect-auto min-[881px]:h-full">
           <ProductGallery
             name={product.name}
             photos={product.photos}
@@ -62,15 +74,7 @@ export default function ProductModal() {
           />
         </div>
 
-        <div className="relative p-[clamp(26px,3vw,44px)]">
-          <button
-            onClick={close}
-            aria-label="Fechar"
-            className="absolute top-[18px] right-[18px] w-[38px] h-[38px] rounded-full border border-line-input bg-transparent text-muted text-[17px] hover:bg-ink hover:text-cream hover:border-ink transition-colors"
-          >
-            ✕
-          </button>
-
+        <div className="relative p-[clamp(26px,3vw,44px)] min-[881px]:h-full min-[881px]:overflow-y-auto">
           <div className="flex items-center gap-3 mb-3">
             <span className="text-[11px] tracking-[0.2em] uppercase text-sage">
               {product.category}
