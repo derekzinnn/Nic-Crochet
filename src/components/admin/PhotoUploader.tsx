@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import PhotoCropper, { type CropRect } from "@/components/admin/PhotoCropper";
 
 export default function PhotoUploader({
   photos,
@@ -13,32 +14,65 @@ export default function PhotoUploader({
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Files waiting to be framed, one at a time, before they're sent. */
+  const [queue, setQueue] = useState<File[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
 
-  const uploadFiles = async (files: FileList | File[]) => {
-    setError(null);
-    const list = Array.from(files);
+  /** Send one already-framed photo; the crop is applied server-side. */
+  const uploadOne = async (file: File, crop: CropRect | null): Promise<string | null> => {
+    const body = new FormData();
+    body.append("file", file);
+    if (crop) {
+      body.append("cropX", String(crop.x));
+      body.append("cropY", String(crop.y));
+      body.append("cropW", String(crop.width));
+      body.append("cropH", String(crop.height));
+    }
+    const res = await fetch("/api/admin/upload", { method: "POST", body });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error ?? "Falha no upload.");
+      return null;
+    }
+    return data.url as string;
+  };
+
+  /** Picking files opens the cropper instead of uploading straight away. */
+  const startCropping = (files: FileList | File[]) => {
+    const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
     if (list.length === 0) return;
+    setError(null);
+    setQueue(list);
+    setQueueIndex(0);
+  };
+
+  const onCropConfirmed = async (crop: CropRect) => {
+    const file = queue[queueIndex];
     setUploading(true);
-    const uploaded: string[] = [];
     try {
-      for (const file of list) {
-        const body = new FormData();
-        body.append("file", file);
-        const res = await fetch("/api/admin/upload", { method: "POST", body });
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.error ?? "Falha no upload.");
-          break;
-        }
-        uploaded.push(data.url);
-      }
-      if (uploaded.length) onChange([...photos, ...uploaded]);
+      const url = await uploadOne(file, crop);
+      // Wait for the upload before moving on: `photos` must be up to date
+      // before the next confirm appends to it, or a photo would be dropped.
+      if (url) onChange([...photos, url]);
     } catch {
       setError("Não foi possível enviar a imagem.");
     } finally {
       setUploading(false);
+      advanceQueue();
     }
   };
+
+  const advanceQueue = () => {
+    if (queueIndex + 1 >= queue.length) {
+      setQueue([]);
+      setQueueIndex(0);
+    } else {
+      setQueueIndex((i) => i + 1);
+    }
+  };
+
+  /** Skip this photo and carry on with the rest of the batch. */
+  const onCropCancelled = () => advanceQueue();
 
   const remove = (url: string) => onChange(photos.filter((p) => p !== url));
   const makeCover = (url: string) => onChange([url, ...photos.filter((p) => p !== url)]);
@@ -70,7 +104,7 @@ export default function PhotoUploader({
         onDrop={(e) => {
           e.preventDefault();
           setDragOver(false);
-          if (e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files);
+          if (e.dataTransfer.files?.length) startCropping(e.dataTransfer.files);
         }}
         className={`w-full rounded-[14px] border border-dashed px-4 py-6 text-center transition-colors ${
           dragOver ? "border-sage bg-sage/10" : "border-line hover:border-sage"
@@ -79,7 +113,9 @@ export default function PhotoUploader({
         <div className="text-[14px] text-ink">
           {uploading ? "Enviando..." : "Arraste fotos aqui ou clique para escolher"}
         </div>
-        <div className="text-[12px] text-muted-soft mt-1">JPG, PNG ou WebP · até 6 MB cada</div>
+        <div className="text-[12px] text-muted-soft mt-1">
+          Você escolhe o enquadramento de cada foto antes de enviar
+        </div>
       </button>
       <input
         ref={inputRef}
@@ -88,12 +124,24 @@ export default function PhotoUploader({
         multiple
         hidden
         onChange={(e) => {
-          if (e.target.files?.length) uploadFiles(e.target.files);
+          if (e.target.files?.length) startCropping(e.target.files);
           e.target.value = "";
         }}
       />
 
       {error && <div className="mt-2 text-[13px] text-[#C06A4A]">{error}</div>}
+
+      {/* Framing happens one photo at a time; hidden while the send is in flight. */}
+      {queue.length > 0 && !uploading && queue[queueIndex] && (
+        <PhotoCropper
+          key={queueIndex}
+          file={queue[queueIndex]}
+          index={queueIndex}
+          total={queue.length}
+          onCancel={onCropCancelled}
+          onConfirm={onCropConfirmed}
+        />
+      )}
 
       {photos.length > 0 && (
         <div className="grid grid-cols-4 gap-[10px] mt-3">

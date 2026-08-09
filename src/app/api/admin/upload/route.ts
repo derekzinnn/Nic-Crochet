@@ -20,10 +20,28 @@ const WEBP_QUALITY = 80;
 const TARGET_RATIO = 3 / 4; // width / height
 const PAD_BG = { r: 251, g: 248, b: 241 }; // site cream (#FBF8F1)
 
+/** Crop chosen in the browser, in the original image's pixels. */
+type Crop = { left: number; top: number; width: number; height: number };
+
 /** Resize within MAX_EDGE, pad to a 3:4 canvas, and encode to WebP. */
-async function toStorageWebp(input: Buffer): Promise<Buffer> {
-  const resized = await sharp(input)
-    .rotate() // bake in EXIF orientation before it's dropped
+async function toStorageWebp(input: Buffer, crop: Crop | null): Promise<Buffer> {
+  // Rotate first: the browser measured the photo with EXIF orientation already
+  // applied, so the crop coordinates only line up after we do the same.
+  let pipeline = sharp(input).rotate();
+
+  if (crop) {
+    const meta = await sharp(input).rotate().metadata();
+    const w = meta.width ?? 0;
+    const h = meta.height ?? 0;
+    // Clamp into the image: a bad rect would make sharp throw.
+    const left = Math.max(0, Math.min(crop.left, Math.max(0, w - 1)));
+    const top = Math.max(0, Math.min(crop.top, Math.max(0, h - 1)));
+    const width = Math.max(1, Math.min(crop.width, w - left));
+    const height = Math.max(1, Math.min(crop.height, h - top));
+    if (w && h) pipeline = pipeline.extract({ left, top, width, height });
+  }
+
+  const resized = await pipeline
     .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
     .toBuffer();
 
@@ -74,9 +92,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Imagem muito grande (máx. 12 MB)." }, { status: 400 });
   }
 
+  // Optional framing chosen in the cropper. Absent = keep the whole photo,
+  // padded to 3:4 as before (drag-and-drop of odd shapes still works).
+  const num = (key: string) => {
+    const v = form.get(key);
+    const n = typeof v === "string" ? parseInt(v, 10) : NaN;
+    return Number.isFinite(n) ? n : null;
+  };
+  const cx = num("cropX");
+  const cy = num("cropY");
+  const cw = num("cropW");
+  const ch = num("cropH");
+  const crop =
+    cx !== null && cy !== null && cw !== null && ch !== null && cw > 0 && ch > 0
+      ? { left: cx, top: cy, width: cw, height: ch }
+      : null;
+
   let optimized: Buffer;
   try {
-    optimized = await toStorageWebp(Buffer.from(await file.arrayBuffer()));
+    optimized = await toStorageWebp(Buffer.from(await file.arrayBuffer()), crop);
   } catch {
     return NextResponse.json({ error: "Não foi possível processar a imagem." }, { status: 400 });
   }
