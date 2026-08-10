@@ -49,12 +49,25 @@ Project → **Storage → New bucket**:
 - **Public bucket: ON** (photos are shown publicly on the storefront)
 - Keep `SUPABASE_STORAGE_BUCKET=product-photos` in `.env`.
 
-## 3. Push the schema & seed
+## 3. Apply the schema & seed
+
+The schema is managed by **Prisma Migrate** (baselined at `prisma/migrations/0_init`).
 
 ```bash
-npm run db:push     # creates tables from prisma/schema.prisma
+npm run db:deploy   # applies all migrations to a fresh DB
 npm run db:seed     # loads the 8 prototype products (optional)
 ```
+
+Changing the schema later:
+
+```bash
+# edit prisma/schema.prisma, then:
+npm run db:migrate -- --name describe_the_change   # creates + applies a migration
+git add prisma/migrations                           # commit the generated SQL
+```
+
+Do **not** use `prisma db push` on this project — it skips the migration history
+and can drop data on an enum/column change.
 
 ## 4. Admin credentials
 

@@ -1,5 +1,10 @@
 // Nic Crochet — data model
-// Postgres (Supabase). Run `npm run db:push` to sync, `npm run db:seed` to seed.
+// Postgres (Supabase). Schema changes go through Prisma Migrate:
+//   npm run db:migrate -- --name descricao   (create + apply a migration)
+//   npm run db:deploy                         (apply pending migrations)
+//   npm run db:status                         (check what's applied)
+// The DB was baselined into prisma/migrations/0_init. Do NOT use `db push` on
+// this project anymore — it bypasses the migration history.
 
 generator client {
   provider = "prisma-client-js"
