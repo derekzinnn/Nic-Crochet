@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import PhotoCropper, { type CropRect } from "@/components/admin/PhotoCropper";
 
 export default function PhotoUploader({
@@ -150,8 +151,7 @@ export default function PhotoUploader({
               key={url}
               className="relative aspect-square rounded-[10px] overflow-hidden border border-line-card group"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="w-full h-full object-cover" />
+              <Image src={url} alt="" fill sizes="120px" className="object-cover" />
               {i === 0 && (
                 <span className="absolute top-1 left-1 bg-sage text-cream text-[9px] tracking-[0.1em] uppercase px-[6px] py-[2px] rounded-[10px]">
                   Capa

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -43,14 +44,25 @@ export default function ProductRow({ product }: { product: ProductView }) {
         pending ? "opacity-50" : ""
       }`}
     >
-      <div
-        className="flex-none w-[52px] h-[52px] rounded-[12px] overflow-hidden"
-        style={{
-          background: product.photos[0]
-            ? `center / cover no-repeat url(${product.photos[0]})`
-            : `repeating-linear-gradient(42deg, ${product.colorPrimary} 0 8px, ${product.colorSecondary} 8px 16px)`,
-        }}
-      />
+      {/* next/image so a 52px thumb doesn't pull the full-size photo. */}
+      <div className="relative flex-none w-[52px] h-[52px] rounded-[12px] overflow-hidden">
+        {product.photos[0] ? (
+          <Image
+            src={product.photos[0]}
+            alt=""
+            fill
+            sizes="52px"
+            className="object-cover"
+          />
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `repeating-linear-gradient(42deg, ${product.colorPrimary} 0 8px, ${product.colorSecondary} 8px 16px)`,
+            }}
+          />
+        )}
+      </div>
       <div className="flex-1 min-w-[170px]">
         <div className="flex items-center gap-2">
           <span

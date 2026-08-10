@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -511,12 +512,7 @@ export default function ProductWizard({
           <div className="bg-cream border border-line-card rounded-[18px] p-4">
             <div className="relative aspect-[3/4] rounded-[14px] overflow-hidden">
               {draft.photos[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={draft.photos[0]}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
+                <Image src={draft.photos[0]} alt="" fill sizes="280px" className="object-cover" />
               ) : (
                 <div
                   className="absolute inset-0"
