@@ -231,12 +231,8 @@ export default function ProductWizard({
             <div className={card}>
               <h2 className="font-serif text-[23px] text-ink mb-1">Aparência</h2>
               <p className="text-[13px] text-muted-soft mb-5">
-                Fotos da peça e as cores do fornecedor em que ela pode ser feita.
+                As cores do fornecedor em que a peça pode ser feita. As fotos ficam na lateral →
               </p>
-
-              <div className="mb-6">
-                <PhotoUploader photos={draft.photos} onChange={(photos) => set("photos", photos)} />
-              </div>
 
               <span className={`${dLabel} mb-[10px]`}>Cores disponíveis (do fornecedor)</span>
               <div className="flex flex-wrap gap-[10px] mb-1">
@@ -510,8 +506,13 @@ export default function ProductWizard({
           </div>
         </div>
 
-        {/* live preview side */}
-        <aside className="min-[881px]:sticky min-[881px]:top-[86px]">
+        {/* photos + live preview side */}
+        <aside className="min-[881px]:sticky min-[881px]:top-[86px] flex flex-col gap-5">
+          <div className="bg-white border border-line-card rounded-[18px] p-4">
+            <PhotoUploader photos={draft.photos} onChange={(photos) => set("photos", photos)} />
+          </div>
+
+          <div>
           <div className="text-[11px] tracking-[0.18em] uppercase text-muted-soft mb-3">
             Como aparece na loja
           </div>
@@ -549,10 +550,11 @@ export default function ProductWizard({
 
           <Link
             href="/area-da-nic/painel"
-            className="inline-block mt-5 text-[13px] text-muted-soft hover:text-sage transition-colors"
+            className="inline-block text-[13px] text-muted-soft hover:text-sage transition-colors"
           >
             ← Cancelar e voltar ao painel
           </Link>
+          </div>
         </aside>
       </div>
     </div>
