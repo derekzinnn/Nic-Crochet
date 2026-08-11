@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import PhotoCropper, { type CropRect } from "@/components/admin/PhotoCropper";
+
+/** A photo being uploaded — shown as a thumbnail with a spinner right away. */
+type PendingJob = { id: string; file: File; crop: CropRect; previewUrl: string };
 
 export default function PhotoUploader({
   photos,
@@ -12,68 +14,80 @@ export default function PhotoUploader({
   onChange: (photos: string[]) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /** Files waiting to be framed, one at a time, before they're sent. */
-  const [queue, setQueue] = useState<File[]>([]);
-  const [queueIndex, setQueueIndex] = useState(0);
 
-  /** Send one already-framed photo; the crop is applied server-side. */
-  const uploadOne = async (file: File, crop: CropRect | null): Promise<string | null> => {
-    const body = new FormData();
-    body.append("file", file);
-    if (crop) {
-      body.append("cropX", String(crop.x));
-      body.append("cropY", String(crop.y));
-      body.append("cropW", String(crop.width));
-      body.append("cropH", String(crop.height));
-    }
-    const res = await fetch("/api/admin/upload", { method: "POST", body });
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error ?? "Falha no upload.");
-      return null;
-    }
-    return data.url as string;
-  };
+  // Files waiting to be framed, one at a time.
+  const [pickQueue, setPickQueue] = useState<File[]>([]);
+  const [pickIndex, setPickIndex] = useState(0);
 
-  /** Picking files opens the cropper instead of uploading straight away. */
+  // Framed photos uploading in the background (sequential worker below).
+  const [jobs, setJobs] = useState<PendingJob[]>([]);
+  const working = useRef(false);
+
+  // Latest photos, so the sequential worker appends onto current state even
+  // after awaits (the onChange closure would otherwise be stale).
+  const photosRef = useRef(photos);
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
+
+  /** Selecting files opens the cropper — nothing uploads until each is framed. */
   const startCropping = (files: FileList | File[]) => {
     const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
     if (list.length === 0) return;
     setError(null);
-    setQueue(list);
-    setQueueIndex(0);
+    setPickQueue(list);
+    setPickIndex(0);
   };
 
-  const onCropConfirmed = async (crop: CropRect) => {
-    const file = queue[queueIndex];
-    setUploading(true);
-    try {
-      const url = await uploadOne(file, crop);
-      // Wait for the upload before moving on: `photos` must be up to date
-      // before the next confirm appends to it, or a photo would be dropped.
-      if (url) onChange([...photos, url]);
-    } catch {
-      setError("Não foi possível enviar a imagem.");
-    } finally {
-      setUploading(false);
-      advanceQueue();
-    }
-  };
-
-  const advanceQueue = () => {
-    if (queueIndex + 1 >= queue.length) {
-      setQueue([]);
-      setQueueIndex(0);
+  const advancePick = () => {
+    if (pickIndex + 1 >= pickQueue.length) {
+      setPickQueue([]);
+      setPickIndex(0);
     } else {
-      setQueueIndex((i) => i + 1);
+      setPickIndex((i) => i + 1);
     }
   };
 
-  /** Skip this photo and carry on with the rest of the batch. */
-  const onCropCancelled = () => advanceQueue();
+  /** Framing done → queue the upload (background) and move to the next photo. */
+  const onCropConfirmed = (crop: CropRect) => {
+    const file = pickQueue[pickIndex];
+    if (file) {
+      setJobs((j) => [
+        ...j,
+        { id: crypto.randomUUID(), file, crop, previewUrl: URL.createObjectURL(file) },
+      ]);
+    }
+    advancePick();
+  };
+
+  // Upload worker: process one job at a time so appends never race each other.
+  useEffect(() => {
+    if (working.current || jobs.length === 0) return;
+    working.current = true;
+    const job = jobs[0];
+    (async () => {
+      try {
+        const body = new FormData();
+        body.append("file", job.file);
+        body.append("cropX", String(job.crop.x));
+        body.append("cropY", String(job.crop.y));
+        body.append("cropW", String(job.crop.width));
+        body.append("cropH", String(job.crop.height));
+        const res = await fetch("/api/admin/upload", { method: "POST", body });
+        const data = await res.json();
+        if (res.ok && data.url) onChange([...photosRef.current, data.url]);
+        else setError(data.error ?? "Falha no upload.");
+      } catch {
+        setError("Não foi possível enviar a imagem.");
+      } finally {
+        URL.revokeObjectURL(job.previewUrl);
+        setJobs((j) => j.slice(1));
+        working.current = false;
+      }
+    })();
+  }, [jobs, onChange]);
 
   const remove = (url: string) => onChange(photos.filter((p) => p !== url));
   const makeCover = (url: string) => onChange([url, ...photos.filter((p) => p !== url)]);
@@ -111,9 +125,7 @@ export default function PhotoUploader({
           dragOver ? "border-sage bg-sage/10" : "border-line hover:border-sage"
         }`}
       >
-        <div className="text-[14px] text-ink">
-          {uploading ? "Enviando..." : "Arraste fotos aqui ou clique para escolher"}
-        </div>
+        <div className="text-[14px] text-ink">Arraste fotos aqui ou clique para escolher</div>
         <div className="text-[12px] text-muted-soft mt-1">
           Você escolhe o enquadramento de cada foto antes de enviar
         </div>
@@ -132,33 +144,21 @@ export default function PhotoUploader({
 
       {error && <div className="mt-2 text-[13px] text-[#C06A4A]">{error}</div>}
 
-      {/* Framing happens one photo at a time; hidden while the send is in flight. */}
-      {queue.length > 0 && !uploading && queue[queueIndex] && (
-        <PhotoCropper
-          key={queueIndex}
-          file={queue[queueIndex]}
-          index={queueIndex}
-          total={queue.length}
-          onCancel={onCropCancelled}
-          onConfirm={onCropConfirmed}
-        />
-      )}
-
-      {photos.length > 0 && (
+      {(photos.length > 0 || jobs.length > 0) && (
         <div className="grid grid-cols-4 gap-[10px] mt-3">
+          {/* uploaded photos */}
           {photos.map((url, i) => (
             <div
               key={url}
               className="relative aspect-square rounded-[10px] overflow-hidden border border-line-card group"
             >
-              <Image src={url} alt="" fill sizes="120px" className="object-cover" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="w-full h-full object-cover" />
               {i === 0 && (
                 <span className="absolute top-1 left-1 bg-sage text-cream text-[9px] tracking-[0.1em] uppercase px-[6px] py-[2px] rounded-[10px]">
                   Capa
                 </span>
               )}
-
-              {/* reorder arrows — first photo is the cover */}
               {photos.length > 1 && (
                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
@@ -201,7 +201,34 @@ export default function PhotoUploader({
               </div>
             </div>
           ))}
+
+          {/* photos still uploading — thumbnail + spinner, no waiting */}
+          {jobs.map((job) => (
+            <div
+              key={job.id}
+              className="relative aspect-square rounded-[10px] overflow-hidden border border-line-card"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={job.previewUrl} alt="" className="w-full h-full object-cover opacity-50" />
+              <div className="absolute inset-0 grid place-items-center bg-cream/40">
+                <span className="w-5 h-5 rounded-full border-2 border-sage border-t-transparent animate-spin" />
+              </div>
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* Framing overlay — one photo at a time; not gated on uploads, so you can
+          keep framing while earlier photos upload in the background. */}
+      {pickQueue.length > 0 && pickQueue[pickIndex] && (
+        <PhotoCropper
+          key={pickIndex}
+          file={pickQueue[pickIndex]}
+          index={pickIndex}
+          total={pickQueue.length}
+          onCancel={advancePick}
+          onConfirm={onCropConfirmed}
+        />
       )}
     </div>
   );

@@ -413,13 +413,19 @@ export default function ProductWizard({
                   O texto que aparece na página da peça.
                 </p>
                 <label className="block mb-4">
-                  <span className={dLabel}>Descrição</span>
+                  <span className={dLabel}>
+                    Descrição <span className="text-[#C06A4A]">*obrigatória</span>
+                  </span>
                   <textarea
                     value={draft.description}
                     onChange={(e) => set("description", e.target.value)}
                     placeholder="Conte a história e o caimento da peça..."
                     rows={3}
-                    className={`${dInput} resize-y`}
+                    className={`${dInput} resize-y ${
+                      draft.description.trim().length > 0 && draft.description.trim().length < 10
+                        ? "border-[#C06A4A]"
+                        : ""
+                    }`}
                   />
                 </label>
                 <label className="block">

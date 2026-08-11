@@ -7,8 +7,8 @@ export const siteConfig = {
   name: "nic crochet",
   tagline: "feito à mão",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5500000000000",
-  instagramHandle: process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE ?? "nic.crochet",
-  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contato@niccrochet.com",
+  instagramHandle: process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE ?? "nic.crochet_",
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "nic.crochet1@gmail.com",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 };
 

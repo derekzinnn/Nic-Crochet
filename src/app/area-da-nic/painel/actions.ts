@@ -89,6 +89,9 @@ function validate(data: ReturnType<typeof normalize>): string | null {
   const noun = data.kind === "CLOTHING" ? "a roupa" : "a bolsa";
   if (!data.name) return `Dê um nome para ${noun}.`;
   if (data.priceCents <= 0) return "Informe um preço válido.";
+  if (data.description.length < 10) {
+    return "Escreva uma descrição para a peça (a história que aparece na página).";
+  }
   const { leadTimeMinDays: min, leadTimeMaxDays: max } = data;
   if (min != null && max != null && max < min) {
     return "O prazo máximo não pode ser menor que o mínimo.";
