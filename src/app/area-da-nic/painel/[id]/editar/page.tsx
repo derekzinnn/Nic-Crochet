@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getProductById } from "@/lib/products";
@@ -20,17 +19,6 @@ export default async function EditarBolsaPage({ params }: { params: Promise<{ id
   if (!product) notFound();
 
   return (
-    <div>
-      <Link
-        href="/area-da-nic/painel"
-        className="text-[13px] text-muted-soft hover:text-sage transition-colors"
-      >
-        ← Suas peças
-      </Link>
-      <h1 className="font-serif font-medium text-[clamp(30px,4vw,42px)] text-ink mt-2 mb-5">
-        Editar peça
-      </h1>
-      <ProductWizard mode="edit" productId={product.id} initial={draftFromProduct(product)} />
-    </div>
+    <ProductWizard mode="edit" productId={product.id} initial={draftFromProduct(product)} />
   );
 }

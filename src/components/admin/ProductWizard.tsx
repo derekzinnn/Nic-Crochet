@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -128,6 +127,19 @@ export default function ProductWizard({
 
   return (
     <div>
+      {/* header — title + always-visible cancel */}
+      <div className="flex items-center justify-between gap-4 mb-5">
+        <h1 className="font-serif font-normal text-[clamp(24px,3.2vw,34px)] leading-none text-ink">
+          {mode === "create" ? `Nova ${noun}` : `Editar ${noun}`}
+        </h1>
+        <Link
+          href="/area-da-nic/painel"
+          className="flex-none inline-flex items-center gap-2 text-[12px] tracking-[0.06em] uppercase text-muted-nav border border-line-input rounded-pill px-[16px] py-[9px] hover:border-[#C06A4A] hover:text-[#C06A4A] transition-colors"
+        >
+          ✕ Cancelar
+        </Link>
+      </div>
+
       {/* stepper */}
       <div className="flex items-center gap-[10px] flex-wrap mb-6">
         {steps.map((key, i) => {
@@ -234,8 +246,19 @@ export default function ProductWizard({
                 As cores do fornecedor em que a peça pode ser feita. As fotos ficam na lateral →
               </p>
 
-              <span className={`${dLabel} mb-[10px]`}>Cores disponíveis (do fornecedor)</span>
-              <div className="flex flex-wrap gap-[10px] mb-1">
+              <div className="flex items-center justify-between mb-[10px]">
+                <span className={`${dLabel} mb-0`}>Cores disponíveis (do fornecedor)</span>
+                {draft.colors.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => set("colors", [])}
+                    className="text-[11px] text-muted-soft hover:text-[#C06A4A] transition-colors"
+                  >
+                    Limpar ({draft.colors.length})
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-[9px] mb-3">
                 {YARN_COLORS.map((c) => {
                   const active = draft.colors.includes(c.id);
                   return (
@@ -243,25 +266,39 @@ export default function ProductWizard({
                       key={c.id}
                       type="button"
                       title={c.name}
+                      aria-pressed={active}
+                      aria-label={c.name}
                       onClick={() => toggleColor(c.id)}
-                      className={`flex items-center gap-2 rounded-[30px] border pl-[6px] pr-3 py-[5px] transition-colors ${
+                      className={`relative w-[34px] h-[34px] rounded-full border transition-all ${
                         active
-                          ? "border-sage bg-sage/15 text-ink"
-                          : "border-line-input text-muted-nav hover:border-sage"
+                          ? "border-transparent ring-2 ring-sage ring-offset-2 ring-offset-white"
+                          : "border-black/15 hover:scale-110"
                       }`}
+                      style={{ background: c.hex }}
                     >
-                      <span
-                        className="w-5 h-5 rounded-full border border-black/15"
-                        style={{ background: c.hex }}
-                      />
-                      <span className="text-[12px]">{c.name}</span>
+                      {active && (
+                        <span className="absolute -top-[5px] -right-[5px] w-[16px] h-[16px] rounded-full bg-sage text-cream grid place-items-center text-[10px] leading-none shadow">
+                          ✓
+                        </span>
+                      )}
                     </button>
                   );
                 })}
               </div>
-              <p className="mb-4 text-[12px] text-muted-faint">
-                Aparecem como “disponível nas cores” na loja e pintam o cartão enquanto a foto da
-                peça não chega.
+              <p className="mb-4 text-[12px] text-muted-nav min-h-[18px]">
+                {draft.colors.length > 0 ? (
+                  <>
+                    <span className="text-muted-soft">Marcadas: </span>
+                    {YARN_COLORS.filter((c) => draft.colors.includes(c.id))
+                      .map((c) => c.name)
+                      .join(", ")}
+                  </>
+                ) : (
+                  <span className="text-muted-faint">
+                    Toque nas cores em que esta peça pode ser feita — aparecem como “disponível nas
+                    cores” na loja.
+                  </span>
+                )}
               </p>
 
               <button
@@ -506,34 +543,25 @@ export default function ProductWizard({
           </div>
         </div>
 
-        {/* photos + live preview side */}
-        <aside className="min-[881px]:sticky min-[881px]:top-[86px] flex flex-col gap-5">
-          <div className="bg-white border border-line-card rounded-[18px] p-4">
-            <PhotoUploader photos={draft.photos} onChange={(photos) => set("photos", photos)} />
-          </div>
-
-          <div>
+        {/* single photo frame = editor + live store preview */}
+        <aside className="min-[881px]:sticky min-[881px]:top-[86px]">
           <div className="text-[11px] tracking-[0.18em] uppercase text-muted-soft mb-3">
             Como aparece na loja
           </div>
           <div className="bg-cream border border-line-card rounded-[18px] p-4">
-            <div className="relative aspect-[3/4] rounded-[14px] overflow-hidden">
-              {draft.photos[0] ? (
-                <Image src={draft.photos[0]} alt="" fill sizes="280px" className="object-cover" />
-              ) : (
+            <PhotoUploader
+              photos={draft.photos}
+              onChange={(photos) => set("photos", photos)}
+              badge={draft.tag}
+              fallback={
                 <div
                   className="absolute inset-0"
                   style={{
                     background: `repeating-linear-gradient(42deg, ${swatch.primary} 0 12px, ${swatch.secondary} 12px 24px)`,
                   }}
                 />
-              )}
-              {draft.tag.trim() && (
-                <span className="absolute top-3 left-3 bg-cream text-sage-deep px-3 py-[5px] rounded-[30px] text-[10px] tracking-[0.14em] uppercase font-semibold">
-                  {draft.tag}
-                </span>
-              )}
-            </div>
+              }
+            />
             <div className="flex items-baseline justify-between gap-[10px] mt-[13px]">
               <span className="font-serif text-[20px] text-ink">
                 {draft.name.trim() || `Nome da ${noun}`}
@@ -546,14 +574,6 @@ export default function ProductWizard({
               {draft.category}
               {isClothing && orderedSizes.length > 0 ? ` · ${orderedSizes.join("/")}` : ""}
             </div>
-          </div>
-
-          <Link
-            href="/area-da-nic/painel"
-            className="inline-block text-[13px] text-muted-soft hover:text-sage transition-colors"
-          >
-            ← Cancelar e voltar ao painel
-          </Link>
           </div>
         </aside>
       </div>
