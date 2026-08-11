@@ -1,8 +1,11 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { PAID_STATUSES } from "@/lib/finance";
 import type {
   CustomOrderStatus,
   CustomOrderView,
+  ExpenseView,
+  IncomeOrderView,
   OrderItemSnapshot,
   OrderStatus,
   OrderView,
@@ -109,6 +112,59 @@ export async function getShippingHealth(): Promise<ShippingHealthView> {
     lastFailureAt: row?.lastFailureAt ? row.lastFailureAt.toISOString() : null,
     lastFailureReason: row?.lastFailureReason ?? null,
   };
+}
+
+/** Expenses in a date range (Finanças dashboard), newest first. */
+export async function getExpenses(from: Date, to: Date): Promise<ExpenseView[]> {
+  return safe(
+    async () =>
+      (
+        await prisma.expense.findMany({
+          where: { date: { gte: from, lt: to } },
+          orderBy: { date: "desc" },
+        })
+      ).map((e) => ({
+        id: e.id,
+        description: e.description,
+        amountCents: e.amountCents,
+        category: e.category,
+        date: e.date.toISOString(),
+      })),
+    [],
+  );
+}
+
+/** Paid orders in a date range — the automatic income side of the dashboard. */
+export async function getIncomeOrders(from: Date, to: Date): Promise<IncomeOrderView[]> {
+  return safe(
+    async () =>
+      (
+        await prisma.order.findMany({
+          where: { status: { in: [...PAID_STATUSES] }, createdAt: { gte: from, lt: to } },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            publicToken: true,
+            customerName: true,
+            totalCents: true,
+            subtotalCents: true,
+            shippingCents: true,
+            status: true,
+            createdAt: true,
+          },
+        })
+      ).map((o) => ({
+        id: o.id,
+        publicToken: o.publicToken,
+        customerName: o.customerName,
+        totalCents: o.totalCents,
+        subtotalCents: o.subtotalCents,
+        shippingCents: o.shippingCents,
+        status: o.status as OrderStatus,
+        createdAt: o.createdAt.toISOString(),
+      })),
+    [],
+  );
 }
 
 export async function getTasks(): Promise<TaskView[]> {

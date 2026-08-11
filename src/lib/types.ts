@@ -45,6 +45,27 @@ export type CustomOrderView = {
   createdAt: string; // ISO
 };
 
+/** Serializable expense shape for the admin Finanças dashboard. */
+export type ExpenseView = {
+  id: string;
+  description: string;
+  amountCents: number;
+  category: string;
+  date: string; // ISO
+};
+
+/** One paid order reduced to what the finance dashboard needs (income line). */
+export type IncomeOrderView = {
+  id: string;
+  publicToken: string;
+  customerName: string;
+  totalCents: number;
+  subtotalCents: number;
+  shippingCents: number;
+  status: OrderStatus;
+  createdAt: string; // ISO
+};
+
 /** Serializable task shape for the admin Agenda. */
 export type TaskView = {
   id: string;

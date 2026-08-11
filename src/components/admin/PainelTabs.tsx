@@ -27,6 +27,11 @@ const TABS: { href: string; label: string; match: (p: string) => boolean }[] = [
     label: "Agenda",
     match: (p) => p.startsWith("/area-da-nic/painel/agenda"),
   },
+  {
+    href: "/area-da-nic/painel/financeiro",
+    label: "Finanças",
+    match: (p) => p.startsWith("/area-da-nic/painel/financeiro"),
+  },
 ];
 
 export default function PainelTabs({

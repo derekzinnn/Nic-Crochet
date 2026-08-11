@@ -101,6 +101,19 @@ model Task {
   @@index([dueDate])
 }
 
+// A manual expense Nic logs (yarn, shipping labels, packaging...). Income is not
+// stored here — it's read live from paid Orders — so the two never drift.
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amountCents Int
+  category    String   @default("Outros") // Fios, Aviamentos, Frete, Embalagem...
+  date        DateTime // when the expense happened (Nic sets it)
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+}
+
 // Single-row health record for the Melhor Envio quote call, so the admin panel
 // can warn Nic that freight is failing (usually an expired token) instead of her
 // finding out through a customer complaint.
