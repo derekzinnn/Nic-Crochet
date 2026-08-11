@@ -66,32 +66,33 @@ export default function AddToBag({
             {palette.map((c) => {
               const active = selected.includes(c.id);
               const base =
-                "flex items-center gap-2 rounded-[30px] pl-[6px] pr-3 py-[5px] border transition-colors";
+                "flex items-center gap-2 rounded-[30px] pl-[7px] pr-4 min-h-[44px] py-2 border select-none transition-[background-color,border-color,transform]";
               return needsColor ? (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => toggle(c.id)}
                   aria-pressed={active}
-                  className={`${base} ${
+                  className={`${base} touch-manipulation active:scale-95 ${
                     active
-                      ? "border-sage bg-sage/15 text-ink"
+                      ? "border-sage bg-sage/20 text-ink ring-1 ring-sage"
                       : "border-line-input text-muted-nav hover:border-sage"
                   }`}
                 >
                   <span
-                    className="w-5 h-5 rounded-full border border-black/10"
+                    className="w-6 h-6 rounded-full border border-black/10"
                     style={{ background: c.hex }}
                   />
-                  <span className="text-[13px]">{c.name}</span>
+                  <span className="text-[14px]">{c.name}</span>
+                  {active && <span className="text-sage-deep text-[13px] leading-none">✓</span>}
                 </button>
               ) : (
                 <span key={c.id} className={`${base} border-line-input text-muted-nav`}>
                   <span
-                    className="w-5 h-5 rounded-full border border-black/10"
+                    className="w-6 h-6 rounded-full border border-black/10"
                     style={{ background: c.hex }}
                   />
-                  <span className="text-[13px]">{c.name}</span>
+                  <span className="text-[14px]">{c.name}</span>
                 </span>
               );
             })}
