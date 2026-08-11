@@ -54,6 +54,15 @@ export type ExpenseView = {
   date: string; // ISO
 };
 
+/** A sale logged by hand (Instagram, in person...) for the finance dashboard. */
+export type ManualSaleView = {
+  id: string;
+  description: string;
+  amountCents: number;
+  note: string | null;
+  date: string; // ISO
+};
+
 /** One paid order reduced to what the finance dashboard needs (income line). */
 export type IncomeOrderView = {
   id: string;

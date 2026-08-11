@@ -6,6 +6,7 @@ import type {
   CustomOrderView,
   ExpenseView,
   IncomeOrderView,
+  ManualSaleView,
   OrderItemSnapshot,
   OrderStatus,
   OrderView,
@@ -162,6 +163,26 @@ export async function getIncomeOrders(from: Date, to: Date): Promise<IncomeOrder
         shippingCents: o.shippingCents,
         status: o.status as OrderStatus,
         createdAt: o.createdAt.toISOString(),
+      })),
+    [],
+  );
+}
+
+/** Manual sales (Instagram, in person...) in a date range, newest first. */
+export async function getManualSales(from: Date, to: Date): Promise<ManualSaleView[]> {
+  return safe(
+    async () =>
+      (
+        await prisma.manualSale.findMany({
+          where: { date: { gte: from, lt: to } },
+          orderBy: { date: "desc" },
+        })
+      ).map((s) => ({
+        id: s.id,
+        description: s.description,
+        amountCents: s.amountCents,
+        note: s.note,
+        date: s.date.toISOString(),
       })),
     [],
   );

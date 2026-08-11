@@ -114,6 +114,19 @@ model Expense {
   @@index([date])
 }
 
+// A sale made outside the site (Instagram, in person...) that Nic logs by hand,
+// so the finance dashboard's income reflects everything, not just site orders.
+model ManualSale {
+  id          String   @id @default(cuid())
+  description String // "Bolsa Amalfi — venda pelo Instagram"
+  amountCents Int
+  date        DateTime
+  note        String? // optional (buyer, channel...)
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+}
+
 // Single-row health record for the Melhor Envio quote call, so the admin panel
 // can warn Nic that freight is failing (usually an expired token) instead of her
 // finding out through a customer complaint.

@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { getExpenses, getIncomeOrders } from "@/lib/admin-data";
+import { getExpenses, getIncomeOrders, getManualSales } from "@/lib/admin-data";
 import { brl } from "@/lib/format";
 import { currentMonth, monthLabel, monthRange, shiftMonth } from "@/lib/finance";
 import ExpenseForm from "@/components/admin/ExpenseForm";
 import ExpenseList from "@/components/admin/ExpenseList";
+import ManualSaleForm from "@/components/admin/ManualSaleForm";
+import SalesList from "@/components/admin/SalesList";
 
 export const metadata: Metadata = { title: "Finanças", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -45,13 +47,18 @@ export default async function FinanceiroPage({
   const ym = /^\d{4}-\d{2}$/.test(sp.mes ?? "") ? sp.mes! : currentMonth();
   const { from, to } = monthRange(ym);
 
-  const [expenses, income] = await Promise.all([getExpenses(from, to), getIncomeOrders(from, to)]);
+  const [expenses, income, manual] = await Promise.all([
+    getExpenses(from, to),
+    getIncomeOrders(from, to),
+    getManualSales(from, to),
+  ]);
 
-  const recebidoCents = income.reduce((n, o) => n + o.totalCents, 0);
-  const pecasCents = income.reduce((n, o) => n + o.subtotalCents, 0);
-  const freteCents = income.reduce((n, o) => n + o.shippingCents, 0);
+  const siteCents = income.reduce((n, o) => n + o.totalCents, 0);
+  const manualCents = manual.reduce((n, s) => n + s.amountCents, 0);
+  const recebidoCents = siteCents + manualCents;
   const gastosCents = expenses.reduce((n, e) => n + e.amountCents, 0);
   const saldoCents = recebidoCents - gastosCents;
+  const vendasCount = income.length + manual.length;
 
   const prev = shiftMonth(ym, -1);
   const next = shiftMonth(ym, 1);
@@ -101,7 +108,7 @@ export default async function FinanceiroPage({
           label="Recebido"
           value={brl(recebidoCents)}
           tone="sage"
-          hint={`${income.length} venda(s) · ${brl(pecasCents)} em peças + ${brl(freteCents)} frete`}
+          hint={`${vendasCount} venda(s) · ${brl(siteCents)} site + ${brl(manualCents)} manual`}
         />
         <StatCard
           label="Gastos"
@@ -131,40 +138,12 @@ export default async function FinanceiroPage({
         <section>
           <h2 className="font-serif text-[22px] text-ink mb-3">Vendas do mês</h2>
           <p className="text-[12px] text-muted-soft mb-3">
-            Puxadas dos pedidos pagos — atualiza sozinho a cada venda.
+            As do site entram sozinhas; use o botão para as de fora (Instagram, pessoal).
           </p>
-          {income.length === 0 ? (
-            <div className="bg-panel-card border border-line-card rounded-[16px] px-5 py-10 text-center">
-              <div className="font-serif italic text-[20px] text-muted">
-                Nenhuma venda neste mês
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-[10px]">
-              {income.map((o) => (
-                <a
-                  key={o.id}
-                  href={`/pedido/${o.publicToken}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-3 bg-panel-card border border-line-card rounded-[14px] px-4 py-3 hover:border-sage transition-colors"
-                >
-                  <div className="min-w-0">
-                    <div className="text-[14px] text-ink font-medium truncate">
-                      {o.customerName}
-                    </div>
-                    <div className="text-[12px] text-muted-soft">
-                      {new Date(o.createdAt).toLocaleDateString("pt-BR")} · #
-                      {o.id.slice(-6).toUpperCase()}
-                    </div>
-                  </div>
-                  <span className="text-[15px] font-semibold text-sage-deep whitespace-nowrap">
-                    {brl(o.totalCents)}
-                  </span>
-                </a>
-              ))}
-            </div>
-          )}
+          <div className="mb-4">
+            <ManualSaleForm month={ym} />
+          </div>
+          <SalesList orders={income} manual={manual} />
         </section>
       </div>
     </div>
