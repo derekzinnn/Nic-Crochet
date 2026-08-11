@@ -56,6 +56,15 @@ export function maskPhone(input: string): string {
   return `(${ddd}) ${rest.slice(0, 1)} ${rest.slice(1, 5)}-${rest.slice(5)}`;
 }
 
+/** Mask a CPF as the user types: 000.000.000-00 */
+export function maskCpf(input: string): string {
+  const d = input.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
 /** Slugify a product name into a URL-safe, accent-free slug. */
 export function slugify(name: string): string {
   return name

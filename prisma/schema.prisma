@@ -183,6 +183,7 @@ model Order {
   customerName  String
   customerEmail String
   customerPhone String?
+  customerCpf   String?
 
   totalCents Int
   status     OrderStatus @default(PENDING)

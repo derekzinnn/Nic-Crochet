@@ -31,7 +31,7 @@ export type PreferenceInput = {
   orderId: string;
   items: PreferenceItem[];
   shippingCents: number;
-  payer?: { name?: string; email?: string };
+  payer?: { name?: string; email?: string; cpf?: string };
 };
 
 export type PreferenceResult =
@@ -71,7 +71,12 @@ export async function createPreference(input: PreferenceInput): Promise<Preferen
   };
   // auto_return needs an https success URL — skip it on localhost so MP doesn't reject.
   if (https) body.auto_return = "approved";
-  if (input.payer?.email) body.payer = { name: input.payer.name, email: input.payer.email };
+  if (input.payer?.email) {
+    const payer: Record<string, unknown> = { name: input.payer.name, email: input.payer.email };
+    const cpf = (input.payer.cpf ?? "").replace(/\D/g, "");
+    if (cpf.length === 11) payer.identification = { type: "CPF", number: cpf };
+    body.payer = payer;
+  }
 
   try {
     const res = await fetch(`${MP_API}/checkout/preferences`, {

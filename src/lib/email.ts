@@ -1,5 +1,5 @@
 import "server-only";
-import { brl } from "@/lib/format";
+import { brl, maskCpf } from "@/lib/format";
 import { colorNames } from "@/lib/custom-order";
 import { pickup, siteConfig } from "@/lib/config";
 import { trackingUrl } from "@/lib/order-tracking";
@@ -162,6 +162,7 @@ export async function sendOrderEmailToNic(order: OrderView): Promise<boolean> {
         ${esc(order.customerName)}<br>
         <a href="${escUrl(`mailto:${order.customerEmail}`)}" style="color:#6E7C48">${esc(order.customerEmail)}</a>
         ${order.customerPhone ? `<br>${esc(order.customerPhone)}` : ""}
+        ${order.customerCpf ? `<br>CPF ${esc(maskCpf(order.customerCpf))}` : ""}
       </p>
     </div>
     <p style="font-size:12px;color:#9A9580;margin-top:20px">Veja tudo no painel: ${siteConfig.url}/area-da-nic/painel/pedidos</p>

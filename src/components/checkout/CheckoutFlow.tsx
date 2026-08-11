@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useCart, selectTotalCents, useShippingSelection } from "@/components/cart/cart-store";
 import ShippingBox from "@/components/cart/ShippingBox";
 import ProductMedia from "@/components/product/ProductMedia";
-import { brl, maskPhone } from "@/lib/format";
+import { brl, maskCpf, maskPhone } from "@/lib/format";
 import { pickup } from "@/lib/config";
 import { colorNames } from "@/lib/custom-order";
 import { resolveYarnColors } from "@/lib/yarn-colors";
-import { isValidEmail, type CreateOrderInput } from "@/lib/checkout";
+import { isValidCpf, isValidEmail, type CreateOrderInput } from "@/lib/checkout";
 import { createOrder, startPayment } from "@/app/actions/orders";
 
 const input =
@@ -38,6 +38,7 @@ export default function CheckoutFlow() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [cpf, setCpf] = useState("");
   const [street, setStreet] = useState("");
   const [district, setDistrict] = useState("");
   const [agree, setAgree] = useState(false);
@@ -53,7 +54,8 @@ export default function CheckoutFlow() {
 
   /** Each step gates the next one. */
   const entregaValid = deliveryValid && (!isShipping || street.trim().length > 0);
-  const pagamentoValid = name.trim().length > 0 && isValidEmail(email) && agree;
+  const pagamentoValid =
+    name.trim().length > 0 && isValidEmail(email) && isValidCpf(cpf) && agree;
 
   const goTo = (s: Step) => {
     setError(null);
@@ -71,10 +73,11 @@ export default function CheckoutFlow() {
     if (step === "pagamento") {
       if (!name.trim()) m.push("seu nome");
       if (!isValidEmail(email)) m.push("um e-mail válido");
+      if (!isValidCpf(cpf)) m.push("um CPF válido");
       if (!agree) m.push("aceitar os termos");
     }
     return m;
-  }, [step, deliveryValid, isShipping, street, name, email, agree]);
+  }, [step, deliveryValid, isShipping, street, name, email, cpf, agree]);
 
   if (!hydrated) {
     return <div className="h-[40vh] grid place-items-center text-muted-soft">Carregando…</div>;
@@ -152,7 +155,7 @@ export default function CheckoutFlow() {
               district: district.trim(),
             }
           : undefined,
-      customer: { name: name.trim(), email: email.trim(), phone: phone.trim() },
+      customer: { name: name.trim(), email: email.trim(), phone: phone.trim(), cpf },
     };
     try {
       const res = await createOrder(payload);
@@ -384,17 +387,28 @@ export default function CheckoutFlow() {
                       />
                     </label>
                     <label className="block">
-                      <span className={label}>WhatsApp / telefone</span>
+                      <span className={label}>CPF</span>
                       <input
-                        value={phone}
-                        onChange={(e) => setPhone(maskPhone(e.target.value))}
-                        inputMode="tel"
-                        maxLength={17}
+                        value={cpf}
+                        onChange={(e) => setCpf(maskCpf(e.target.value))}
+                        inputMode="numeric"
+                        maxLength={14}
                         className={input}
-                        placeholder="(53) 9 9999-9999"
+                        placeholder="000.000.000-00"
                       />
                     </label>
                   </div>
+                  <label className="block">
+                    <span className={label}>WhatsApp / telefone</span>
+                    <input
+                      value={phone}
+                      onChange={(e) => setPhone(maskPhone(e.target.value))}
+                      inputMode="tel"
+                      maxLength={17}
+                      className={input}
+                      placeholder="(53) 9 9999-9999"
+                    />
+                  </label>
 
                   <div className="rounded-[12px] border border-line-card bg-sand/60 px-[14px] py-3 flex items-center gap-3">
                     <span className="grid place-items-center w-[38px] h-[38px] rounded-[10px] bg-[#00A9E0] text-white text-[16px] font-bold flex-none">

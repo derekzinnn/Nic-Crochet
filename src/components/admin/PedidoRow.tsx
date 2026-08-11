@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { orderStatusLabel, type OrderStatus, type OrderView } from "@/lib/types";
-import { brl } from "@/lib/format";
+import { brl, maskCpf } from "@/lib/format";
 import { formatCep } from "@/lib/shipping";
 import { resolveYarnColors } from "@/lib/yarn-colors";
 import {
@@ -101,6 +101,9 @@ export default function PedidoRow({ order }: { order: OrderView }) {
             {order.customerEmail}
             {order.customerPhone ? ` · ${order.customerPhone}` : ""}
           </div>
+          {order.customerCpf ? (
+            <div className="text-[11px] text-muted-faint">CPF {maskCpf(order.customerCpf)}</div>
+          ) : null}
         </div>
         <span
           className={`flex-none text-[10px] tracking-[0.1em] uppercase font-semibold px-[11px] py-[6px] rounded-[20px] ${STATUS_PILL[order.status]}`}

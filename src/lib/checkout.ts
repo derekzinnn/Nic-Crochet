@@ -15,6 +15,7 @@ export type CheckoutCustomer = {
   name: string;
   email: string;
   phone: string;
+  cpf: string;
 };
 
 export type CheckoutAddress = {
@@ -49,4 +50,20 @@ export function isValidEmail(email: string): boolean {
   const value = email.trim();
   if (value.length > 254) return false;
   return /^[^@\s<>"'`\\]+@[^@\s<>"'`\\]+\.[^@\s<>"'`\\]{2,}$/.test(value);
+}
+
+/** Validate a Brazilian CPF (11 digits + the two check digits). */
+export function isValidCpf(cpf: string): boolean {
+  const d = (cpf ?? "").replace(/\D/g, "");
+  if (d.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(d)) return false; // all-same digits pass the checksum
+  const digits = d.split("").map(Number);
+  for (let t = 9; t < 11; t++) {
+    let sum = 0;
+    for (let i = 0; i < t; i++) sum += digits[i] * (t + 1 - i);
+    let check = (sum * 10) % 11;
+    if (check === 10) check = 0;
+    if (check !== digits[t]) return false;
+  }
+  return true;
 }

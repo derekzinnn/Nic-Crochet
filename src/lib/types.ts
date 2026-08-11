@@ -188,6 +188,7 @@ export type OrderView = {
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;
+  customerCpf: string | null;
   totalCents: number;
   status: OrderStatus;
   createdAt: string; // ISO

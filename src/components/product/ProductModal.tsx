@@ -62,7 +62,7 @@ export default function ProductModal() {
           ✕
         </button>
 
-        <div className="relative min-h-[200px] aspect-[16/10] min-[881px]:aspect-auto min-[881px]:h-full">
+        <div className="relative min-h-[200px] aspect-[3/4] max-[880px]:max-h-[60vh] min-[881px]:aspect-auto min-[881px]:h-full">
           <ProductGallery
             name={product.name}
             photos={product.photos}

@@ -24,6 +24,7 @@ export async function POST() {
     id: "pedidoexemplo0001",
     publicToken: "exemplo-token-de-teste",
     trackingCode: null,
+    customerCpf: "12345678909",
     items: [
       {
         productId: "sample-1",

@@ -4,7 +4,12 @@ import { randomBytes } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { isValidEmail, type CreateOrderInput, type CreateOrderResult } from "@/lib/checkout";
+import {
+  isValidCpf,
+  isValidEmail,
+  type CreateOrderInput,
+  type CreateOrderResult,
+} from "@/lib/checkout";
 import { colorNames } from "@/lib/custom-order";
 import { createPreference, isMercadoPagoConfigured } from "@/lib/mercado-pago";
 import type { OrderItemSnapshot } from "@/lib/types";
@@ -22,8 +27,10 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
   const name = input.customer?.name?.trim() ?? "";
   const email = input.customer?.email?.trim() ?? "";
   const phone = input.customer?.phone?.trim() ?? "";
+  const cpfDigits = (input.customer?.cpf ?? "").replace(/\D/g, "");
   if (!name) return { ok: false, error: "Informe seu nome." };
   if (!isValidEmail(email)) return { ok: false, error: "Informe um e-mail válido." };
+  if (!isValidCpf(cpfDigits)) return { ok: false, error: "Informe um CPF válido." };
 
   const method = input.deliveryMethod === "pickup" ? "PICKUP" : "SHIPPING";
 
@@ -89,6 +96,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         customerName: name,
         customerEmail: email,
         customerPhone: phone || null,
+        customerCpf: cpfDigits,
         totalCents: total,
         status: "PENDING",
       },
@@ -140,7 +148,11 @@ export async function startPayment(orderId: string): Promise<StartPaymentResult>
         };
       }),
       shippingCents: order.shippingCents,
-      payer: { name: order.customerName, email: order.customerEmail },
+      payer: {
+        name: order.customerName,
+        email: order.customerEmail,
+        cpf: order.customerCpf ?? undefined,
+      },
     });
     if (!pref.ok) return { ok: false, error: pref.error };
 

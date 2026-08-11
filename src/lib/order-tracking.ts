@@ -31,6 +31,7 @@ export async function getOrderByToken(token: string): Promise<OrderView | null> 
       customerName: o.customerName,
       customerEmail: o.customerEmail,
       customerPhone: o.customerPhone,
+      customerCpf: o.customerCpf,
       totalCents: o.totalCents,
       status: o.status as OrderStatus,
       createdAt: o.createdAt.toISOString(),
