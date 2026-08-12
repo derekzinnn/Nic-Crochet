@@ -3,7 +3,6 @@ import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { ProductView } from "@/lib/types";
-import { seedProducts } from "@/data/seed-products";
 import { swatchFromColors } from "@/lib/yarn-colors";
 
 type DbProduct = Prisma.ProductGetPayload<object>;
@@ -38,33 +37,23 @@ function toView(p: DbProduct): ProductView {
 }
 
 /**
- * DB reads with a transient-error guard. A Supabase/pooler hiccup on refresh
- * used to fall straight through to the static seed catalogue — which meant the
- * LIVE store would sometimes flash 8 fake "test" bags. Now we:
- *   1. retry once (short backoff) to ride out a transient blip, and
- *   2. in production return the empty result (`[]` / `null`) rather than seeds,
- *      so real data is the only thing customers ever see. The seed catalogue is
- *      kept purely as a local-dev convenience (no DB configured yet).
- * The error is always logged so a real outage is visible in the container logs.
+ * DB reads with a transient-error guard: retry once (short backoff) to ride out
+ * a Supabase/pooler blip, and if it still fails return an empty result
+ * (`[]` / `null`) so the store just renders nothing rather than crashing — real
+ * data is the only thing customers ever see. The error is always logged so a
+ * genuine outage is visible in the container logs.
  */
-async function withFallback<T>(
-  query: () => Promise<T>,
-  emptyInProd: T,
-  seedInDev: T,
-): Promise<T> {
+async function withFallback<T>(query: () => Promise<T>, empty: T): Promise<T> {
   const attempts = 2;
   for (let i = 0; i < attempts; i++) {
     try {
       return await query();
     } catch (err) {
       console.error(`[products] DB read failed (try ${i + 1}/${attempts}):`, (err as Error).message);
-      if (i < attempts - 1) {
-        await new Promise((r) => setTimeout(r, 150));
-        continue;
-      }
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 150));
     }
   }
-  return process.env.NODE_ENV === "production" ? emptyInProd : seedInDev;
+  return empty;
 }
 
 /**
@@ -87,7 +76,6 @@ export async function getAllProducts(): Promise<ProductView[]> {
       (await prisma.product.findMany({ orderBy: { createdAt: "desc" } })).map(toView),
     ),
     [],
-    seedProducts,
   );
 }
 
@@ -108,7 +96,6 @@ export async function getLatestProducts(limit = 5): Promise<ProductView[]> {
       return latest.map(toView);
     }),
     [],
-    seedProducts.slice(0, limit),
   );
 }
 
@@ -123,7 +110,6 @@ export async function getHeroProduct(): Promise<ProductView | null> {
       return p ? toView(p) : null;
     }),
     null,
-    seedProducts.find((p) => p.featured && p.photos.length > 0) ?? null,
   );
 }
 
@@ -134,7 +120,6 @@ export async function getProductBySlug(slug: string): Promise<ProductView | null
       return p ? toView(p) : null;
     }),
     null,
-    seedProducts.find((p) => p.slug === slug) ?? null,
   );
 }
 
@@ -145,6 +130,5 @@ export async function getProductById(id: string): Promise<ProductView | null> {
       return p ? toView(p) : null;
     },
     null,
-    seedProducts.find((p) => p.id === id) ?? null,
   );
 }

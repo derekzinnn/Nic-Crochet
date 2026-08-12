@@ -27,8 +27,10 @@ pixel on a production stack, and makes real the functionality the prototype fake
 - **Custom-order alert = WhatsApp link** (user choice) — no email service needed.
 - **Admin auth = single env-configured account** (bcrypt hash + signed cookie),
   not NextAuth — right-sized for one artisan.
-- **Graceful DB fallback**: `src/lib/products.ts` falls back to the static seed
-  catalogue if the DB is unreachable, so the site renders before Supabase exists.
+- **DB reads are resilient, never faked**: `src/lib/products.ts` retries a read
+  once on a transient Supabase/pooler error and otherwise returns empty — the
+  live store only ever shows real data. (The old static seed catalogue that used
+  to back-fill here was removed once the real DB went live.)
 - **Fallback swatch colors** kept per product (`colorPrimary/Secondary`) so the
   handmade placeholder look survives until Nic uploads real photos.
 
