@@ -92,7 +92,7 @@ export default function CollectionView({
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-[clamp(16px,2.2vw,30px)]">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 min-[560px]:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] min-[560px]:gap-[clamp(16px,2.2vw,30px)]">
             {shown.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
