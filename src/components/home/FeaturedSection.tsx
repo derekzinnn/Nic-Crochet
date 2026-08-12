@@ -2,9 +2,9 @@ import Link from "next/link";
 import { getLatestProducts } from "@/lib/products";
 import ProductCard from "@/components/product/ProductCard";
 
-/** Newest pieces first. Desktop shows 5; phones/tablets show the first 3. */
+/** Newest pieces first. Desktop shows 5; phones/tablets show the first 4 (2×2). */
 const DESKTOP_COUNT = 5;
-const COMPACT_COUNT = 3;
+const COMPACT_COUNT = 4;
 
 export default async function FeaturedSection() {
   const featured = await getLatestProducts(DESKTOP_COUNT);
@@ -29,9 +29,9 @@ export default async function FeaturedSection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] min-[1100px]:grid-cols-5 gap-[clamp(18px,2.4vw,34px)]">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-6 min-[560px]:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] min-[1100px]:grid-cols-5 min-[560px]:gap-[clamp(18px,2.4vw,34px)]">
         {featured.map((p, i) => (
-          // Below the 5-column breakpoint only the first 3 stay on screen.
+          // Below the 5-column breakpoint only the first 4 stay on screen (2×2).
           <div key={p.id} className={i >= COMPACT_COUNT ? "max-[1099px]:hidden" : undefined}>
             <ProductCard product={p} reveal />
           </div>
