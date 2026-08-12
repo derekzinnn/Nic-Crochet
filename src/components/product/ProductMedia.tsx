@@ -36,6 +36,10 @@ export default function ProductMedia({
         fill
         priority={priority}
         sizes={sizes ?? "(max-width: 880px) 50vw, 300px"}
+        // Photos are already recompressed to WebP ≤1400px on upload, so we skip
+        // Next's on-demand optimizer (slow to encode AVIF on the ARM VPS) and let
+        // them stream straight from the Supabase CDN — much faster to first paint.
+        unoptimized
         className="object-cover"
       />
     );

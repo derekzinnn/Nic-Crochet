@@ -37,6 +37,11 @@ export default function ProductCard({
             {product.tag}
           </span>
         )}
+        {/* On phones the price rides the image as a minimalist selo, freeing the
+            caption below to center the name. Desktop keeps name + price in a row. */}
+        <span className="min-[560px]:hidden absolute left-[10px] bottom-[10px] z-20 bg-cream/95 backdrop-blur-[2px] text-ink text-[11px] font-semibold px-[10px] py-[5px] rounded-[20px] shadow-[0_4px_12px_-4px_rgba(59,58,46,.5)] whitespace-nowrap">
+          {priceLabel(product.priceCents, fromPrefix)}
+        </span>
         <button
           type="button"
           aria-label={
@@ -49,16 +54,18 @@ export default function ProductCard({
         </button>
       </div>
 
-      <div className="flex items-baseline justify-between gap-2 min-[560px]:gap-3 mt-[10px] min-[560px]:mt-4">
-        <h3 className="font-serif font-medium text-[17px] min-[560px]:text-[22px] leading-tight text-ink">
-          {product.name}
-        </h3>
-        <span className="text-[13px] min-[560px]:text-[15px] font-semibold text-sage-deep whitespace-nowrap">
-          {priceLabel(product.priceCents, fromPrefix)}
-        </span>
-      </div>
-      <div className="text-[10px] min-[560px]:text-[12px] tracking-[0.12em] uppercase text-muted-faint mt-1">
-        {product.category}
+      <div className="mt-[10px] min-[560px]:mt-4 text-center min-[560px]:text-left">
+        <div className="flex flex-col items-center gap-1 min-[560px]:flex-row min-[560px]:items-baseline min-[560px]:justify-between min-[560px]:gap-3">
+          <h3 className="font-serif font-medium text-[16px] min-[560px]:text-[22px] leading-tight text-ink">
+            {product.name}
+          </h3>
+          <span className="hidden min-[560px]:inline text-[15px] font-semibold text-sage-deep whitespace-nowrap">
+            {priceLabel(product.priceCents, fromPrefix)}
+          </span>
+        </div>
+        <div className="text-[10px] min-[560px]:text-[12px] tracking-[0.12em] uppercase text-muted-faint mt-1">
+          {product.category}
+        </div>
       </div>
 
       {/* Cards open the detail pop-up (prototype behavior); /produto/[slug]

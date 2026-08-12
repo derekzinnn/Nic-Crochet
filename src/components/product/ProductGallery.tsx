@@ -62,6 +62,9 @@ export default function ProductGallery({
           // Preload every photo (not lazy) so switching is instant, no blank flash.
           {...(i === 0 ? { priority } : { loading: "eager" as const })}
           sizes={sizes ?? "(max-width: 880px) 100vw, 450px"}
+          // Already-optimized WebP from upload — stream straight from Supabase CDN
+          // instead of paying a slow AVIF re-encode on the ARM VPS.
+          unoptimized
           className={`object-cover transition-opacity duration-300 ${
             i === index ? "opacity-100" : "opacity-0"
           }`}

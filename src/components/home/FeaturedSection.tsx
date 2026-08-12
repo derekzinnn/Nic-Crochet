@@ -11,7 +11,7 @@ export default async function FeaturedSection() {
 
   return (
     <section className="relative px-[clamp(20px,5vw,64px)] py-[clamp(70px,9vw,130px)] bg-cream">
-      <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
+      <div className="flex flex-col items-center text-center gap-6 mb-12 min-[700px]:flex-row min-[700px]:items-end min-[700px]:justify-between min-[700px]:text-left">
         <div data-reveal>
           <div className="text-[12px] tracking-[0.34em] uppercase text-sage mb-4">Destaques</div>
           <h2 className="font-serif font-medium text-[clamp(36px,5vw,68px)] leading-none text-ink">
