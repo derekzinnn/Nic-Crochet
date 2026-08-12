@@ -47,7 +47,7 @@ export default function PainelTabs({
     label === "Encomendas" ? newOrders : label === "Pedidos" ? openOrders : 0;
 
   return (
-    <nav className="flex gap-1 border-b border-line-card mb-8">
+    <nav className="flex gap-1 border-b border-line-card mb-8 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       {TABS.map((t) => {
         const active = t.match(pathname);
         const count = badge(t.label);
@@ -55,7 +55,7 @@ export default function PainelTabs({
           <Link
             key={t.href}
             href={t.href}
-            className={`relative -mb-px px-4 py-3 text-[13px] tracking-[0.06em] uppercase border-b-2 transition-colors ${
+            className={`relative -mb-px flex-none whitespace-nowrap px-3 min-[420px]:px-4 py-3 text-[12px] min-[420px]:text-[13px] tracking-[0.06em] uppercase border-b-2 transition-colors ${
               active
                 ? "border-sage text-ink font-semibold"
                 : "border-transparent text-muted-soft hover:text-ink"
