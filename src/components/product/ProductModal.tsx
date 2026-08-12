@@ -52,7 +52,7 @@ export default function ProductModal() {
         role="dialog"
         aria-modal="true"
         aria-label={product.name}
-        className="relative z-[2] w-[min(900px,100%)] max-h-[90vh] max-[880px]:max-h-[92vh] overflow-auto min-[881px]:overflow-hidden min-[881px]:h-[min(620px,86vh)] bg-cream rounded-[24px] shadow-[0_50px_110px_-40px_rgba(0,0,0,.5)] grid grid-cols-1 min-[881px]:grid-cols-2 animate-modalUp"
+        className="relative z-[2] w-[min(900px,100%)] max-h-[90vh] max-[880px]:max-h-[92vh] overflow-auto min-[881px]:overflow-hidden min-[881px]:h-[min(620px,86vh)] bg-cream rounded-[24px] shadow-[0_50px_110px_-40px_rgba(0,0,0,.5)] flex flex-col min-[881px]:grid min-[881px]:grid-cols-2 animate-modalUp"
       >
         <button
           onClick={close}
@@ -62,7 +62,11 @@ export default function ProductModal() {
           ✕
         </button>
 
-        <div className="relative min-h-[200px] aspect-[3/4] min-[881px]:aspect-auto min-[881px]:h-full">
+        {/* Mobile: a fixed-height image block in a flex column — bulletproof
+            stacking (real iOS Safari mis-sized the aspect-ratio row inside a
+            grid and let the caption ghost over the photo). Desktop keeps the
+            two-column layout with the image filling its cell. */}
+        <div className="relative w-full flex-none h-[56vh] min-[881px]:h-full">
           <ProductGallery
             name={product.name}
             photos={product.photos}
