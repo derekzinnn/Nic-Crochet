@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProductView } from "@/lib/types";
-import { priceLabel } from "@/lib/format";
+import { brl, priceLabel } from "@/lib/format";
 import { useCart } from "@/components/cart/cart-store";
 import { useProductModal } from "@/components/product/product-modal-store";
 import ProductMedia from "@/components/product/ProductMedia";
@@ -40,7 +40,7 @@ export default function ProductCard({
         {/* On phones the price rides the image as a minimalist selo, freeing the
             caption below to center the name. Desktop keeps name + price in a row. */}
         <span className="min-[560px]:hidden absolute left-[10px] bottom-[10px] z-20 bg-cream/95 backdrop-blur-[2px] text-ink text-[11px] font-semibold px-[10px] py-[5px] rounded-[20px] shadow-[0_4px_12px_-4px_rgba(59,58,46,.5)] whitespace-nowrap">
-          {priceLabel(product.priceCents, fromPrefix)}
+          {brl(product.priceCents)}
         </span>
         <button
           type="button"

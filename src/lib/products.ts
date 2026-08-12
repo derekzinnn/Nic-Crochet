@@ -38,19 +38,33 @@ function toView(p: DbProduct): ProductView {
 }
 
 /**
- * During the foundation phase the DB may be a placeholder. Any connection
- * failure falls back to the static seed catalogue so pages still render.
- * Once real Supabase credentials are in place this fallback simply never trips.
+ * DB reads with a transient-error guard. A Supabase/pooler hiccup on refresh
+ * used to fall straight through to the static seed catalogue — which meant the
+ * LIVE store would sometimes flash 8 fake "test" bags. Now we:
+ *   1. retry once (short backoff) to ride out a transient blip, and
+ *   2. in production return the empty result (`[]` / `null`) rather than seeds,
+ *      so real data is the only thing customers ever see. The seed catalogue is
+ *      kept purely as a local-dev convenience (no DB configured yet).
+ * The error is always logged so a real outage is visible in the container logs.
  */
-async function withFallback<T>(query: () => Promise<T>, fallback: T): Promise<T> {
-  try {
-    return await query();
-  } catch (err) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("[products] DB unavailable, using seed fallback:", (err as Error).message);
+async function withFallback<T>(
+  query: () => Promise<T>,
+  emptyInProd: T,
+  seedInDev: T,
+): Promise<T> {
+  const attempts = 2;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await query();
+    } catch (err) {
+      console.error(`[products] DB read failed (try ${i + 1}/${attempts}):`, (err as Error).message);
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, 150));
+        continue;
+      }
     }
-    return fallback;
   }
+  return process.env.NODE_ENV === "production" ? emptyInProd : seedInDev;
 }
 
 /**
@@ -72,6 +86,7 @@ export async function getAllProducts(): Promise<ProductView[]> {
     cached(["all"], async () =>
       (await prisma.product.findMany({ orderBy: { createdAt: "desc" } })).map(toView),
     ),
+    [],
     seedProducts,
   );
 }
@@ -92,6 +107,7 @@ export async function getLatestProducts(limit = 5): Promise<ProductView[]> {
       });
       return latest.map(toView);
     }),
+    [],
     seedProducts.slice(0, limit),
   );
 }
@@ -106,6 +122,7 @@ export async function getHeroProduct(): Promise<ProductView | null> {
       });
       return p ? toView(p) : null;
     }),
+    null,
     seedProducts.find((p) => p.featured && p.photos.length > 0) ?? null,
   );
 }
@@ -116,6 +133,7 @@ export async function getProductBySlug(slug: string): Promise<ProductView | null
       const p = await prisma.product.findUnique({ where: { slug } });
       return p ? toView(p) : null;
     }),
+    null,
     seedProducts.find((p) => p.slug === slug) ?? null,
   );
 }
@@ -126,6 +144,7 @@ export async function getProductById(id: string): Promise<ProductView | null> {
       const p = await prisma.product.findUnique({ where: { id } });
       return p ? toView(p) : null;
     },
+    null,
     seedProducts.find((p) => p.id === id) ?? null,
   );
 }

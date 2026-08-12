@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 import { useCart, selectCount } from "@/components/cart/cart-store";
 
-const LINKS = [{ href: "/sob-medida", label: "Sob medida" }];
+// "Sob medida" está temporariamente fora da visão (a pedido). A página
+// /sob-medida e todo o fluxo continuam existindo — para reativar, basta repor
+// { href: "/sob-medida", label: "Sob medida" } aqui.
+const LINKS: { href: string; label: string }[] = [];
 
 const COLLECTION_LINKS = [
   { href: "/colecao", label: "Bolsas" },
@@ -182,12 +185,16 @@ export default function Nav() {
                 {l.label}
               </Link>
             ))}
-            <div className="h-px bg-[#EDE6D4] mx-[10px] my-[6px]" />
-            {LINKS.map((l) => (
-              <Link key={l.href} href={l.href} className={menuItem}>
-                {l.label}
-              </Link>
-            ))}
+            {LINKS.length > 0 && (
+              <>
+                <div className="h-px bg-[#EDE6D4] mx-[10px] my-[6px]" />
+                {LINKS.map((l) => (
+                  <Link key={l.href} href={l.href} className={menuItem}>
+                    {l.label}
+                  </Link>
+                ))}
+              </>
+            )}
             <div className="h-px bg-[#EDE6D4] mx-[10px] my-[6px]" />
             <Link href="/area-da-nic" className={`${menuItem} italic !text-sage`}>
               Área da Nic →

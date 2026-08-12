@@ -1,7 +1,7 @@
 import Hero from "@/components/home/Hero";
 import FeaturedSection from "@/components/home/FeaturedSection";
 import AtelierStrip from "@/components/home/AtelierStrip";
-import CustomCta from "@/components/home/CustomCta";
+// CustomCta (seção "Sob medida") escondida temporariamente (a pedido) — componente mantido.
 import { getHeroProduct } from "@/lib/products";
 
 // Featured products come from the DB; revalidate periodically.
@@ -14,7 +14,6 @@ export default async function HomePage() {
       <Hero heroBag={heroBag} />
       <FeaturedSection />
       <AtelierStrip />
-      <CustomCta />
     </>
   );
 }

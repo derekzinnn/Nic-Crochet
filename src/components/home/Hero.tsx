@@ -36,12 +36,7 @@ export default function Hero({ heroBag }: { heroBag: ProductView | null }) {
           >
             Ver a coleção
           </Link>
-          <Link
-            href="/sob-medida"
-            className="btn-pill bg-transparent text-ink border border-line px-[34px] py-4 hover:border-sage hover:text-sage"
-          >
-            Sob medida
-          </Link>
+          {/* Botão "Sob medida" escondido temporariamente (a pedido). */}
         </div>
       </div>
 
