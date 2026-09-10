@@ -21,9 +21,9 @@ export default function AtelierStrip() {
             mais que modas.
           </h2>
           <p className="mt-[26px] text-[16px] leading-[1.8] text-[#E3E2CF] font-light max-w-[460px]">
-            Comecei o crochê na varanda de casa, com um novelo herdado da minha avó. Hoje cada bolsa
-            nasce do mesmo lugar: tempo, paciência e a vontade de fazer algo que ninguém mais tem
-            igual.
+            O crochê começou como hobby, pela vontade de fazer as minhas próprias roupas e as
+            minhas próprias bolsas — sempre tive esse interesse. Hoje cada peça nasce do mesmo
+            lugar: tempo, paciência e a vontade de fazer algo que ninguém mais tem igual.
           </p>
           <div className="flex gap-[14px] mt-[34px] items-center">
             <div className="font-serif italic text-[34px] text-cream">~ Nic</div>
