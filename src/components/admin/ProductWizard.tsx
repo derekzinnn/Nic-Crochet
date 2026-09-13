@@ -11,6 +11,7 @@ import {
   type ProductDraft,
 } from "@/lib/product-form";
 import { brl, reaisToCents, leadTimeLabel } from "@/lib/format";
+import { BOX_SIZES, BOX_PRESETS } from "@/lib/shipping";
 import { PRODUCT_STATUS_LABEL, KIND_LABEL, type ProductKind } from "@/lib/types";
 import { YARN_COLORS, swatchFromColors } from "@/lib/yarn-colors";
 import { createProduct, updateProduct } from "@/app/area-da-nic/painel/actions";
@@ -408,31 +409,50 @@ export default function ProductWizard({
               </div>
 
               <div className="bg-white border border-line-card rounded-[18px] p-[26px]">
-                <h2 className="font-serif text-[23px] text-ink mb-1">Medidas para frete</h2>
+                <h2 className="font-serif text-[23px] text-ink mb-1">Peso e caixa (frete)</h2>
                 <p className="text-[13px] text-muted-soft mb-5">
-                  Peso e dimensões da peça embalada — usados para calcular o frete no checkout.
-                  Já vêm preenchidos com um padrão de bolsa; ajuste se esta peça for bem diferente.
+                  O frete é calculado pelo <strong>peso</strong> e pela <strong>caixa</strong> em
+                  que a peça é enviada. Escolha a caixa mais próxima.
                 </p>
-                <div className="grid grid-cols-2 gap-4 max-w-[420px]">
-                  {(
-                    [
-                      ["weightGrams", "Peso (g)", "350"],
-                      ["heightCm", "Altura (cm)", "12"],
-                      ["widthCm", "Largura (cm)", "22"],
-                      ["lengthCm", "Comprimento (cm)", "28"],
-                    ] as const
-                  ).map(([key, label, ph]) => (
-                    <label key={key} className="block">
-                      <span className={dLabel}>{label}</span>
-                      <input
-                        value={draft[key]}
-                        onChange={(e) => set(key, e.target.value)}
-                        inputMode="numeric"
-                        placeholder={ph}
-                        className={dInput}
-                      />
-                    </label>
-                  ))}
+
+                <label className="block mb-4 max-w-[200px]">
+                  <span className={dLabel}>Peso (g)</span>
+                  <input
+                    value={draft.weightGrams}
+                    onChange={(e) => set("weightGrams", e.target.value)}
+                    inputMode="numeric"
+                    placeholder="350"
+                    className={dInput}
+                  />
+                </label>
+
+                <span className={`${dLabel} mb-[9px]`}>Tamanho da caixa</span>
+                <div className="flex flex-wrap gap-2">
+                  {BOX_SIZES.map((b) => {
+                    const box = BOX_PRESETS[b];
+                    const active = draft.boxSize === b;
+                    return (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => set("boxSize", b)}
+                        className={`rounded-[14px] px-4 py-3 text-left border transition-colors ${
+                          active
+                            ? "bg-ink text-cream border-ink"
+                            : "bg-white text-muted-nav border-line-input hover:border-sage"
+                        }`}
+                      >
+                        <span className="block text-[14px] font-semibold">
+                          {b} · {box.label}
+                        </span>
+                        <span
+                          className={`block text-[11px] mt-[2px] ${active ? "text-cream/70" : "text-muted-soft"}`}
+                        >
+                          {box.lengthCm}×{box.widthCm}×{box.heightCm} cm
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

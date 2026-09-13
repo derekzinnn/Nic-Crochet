@@ -2,6 +2,9 @@ export type ProductStatus = "AVAILABLE" | "SOLD" | "MADE_TO_ORDER";
 
 export type ProductKind = "BAG" | "CLOTHING";
 
+/** Shipping box a piece ships in (dimensions in src/lib/shipping.ts). */
+export type BoxSize = "P" | "M" | "G";
+
 export const KIND_LABEL: Record<ProductKind, string> = {
   BAG: "Bolsa",
   CLOTHING: "Roupa",
@@ -107,11 +110,9 @@ export type ProductView = {
   /** Delivery estimate in days. Null when not informed. */
   leadTimeMinDays: number | null;
   leadTimeMaxDays: number | null;
-  /** Shipping package dimensions (for the Melhor Envio quote / admin editing). */
+  /** Shipping: weight (grams) + box size (P/M/G → dimensions in BOX_PRESETS). */
   weightGrams?: number;
-  heightCm?: number;
-  widthCm?: number;
-  lengthCm?: number;
+  boxSize: BoxSize;
   /** Derived from `colors` — the woven placeholder swatch (not user-editable). */
   colorPrimary: string;
   colorSecondary: string;

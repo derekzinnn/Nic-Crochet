@@ -28,9 +28,7 @@ function toView(p: DbProduct): ProductView {
     leadTimeMinDays: p.leadTimeMinDays,
     leadTimeMaxDays: p.leadTimeMaxDays,
     weightGrams: p.weightGrams,
-    heightCm: p.heightCm,
-    widthCm: p.widthCm,
-    lengthCm: p.lengthCm,
+    boxSize: p.boxSize,
     colorPrimary: swatch.primary,
     colorSecondary: swatch.secondary,
   };

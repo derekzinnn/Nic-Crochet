@@ -123,9 +123,23 @@ export default function ProductRow({ product }: { product: ProductView }) {
         <button
           disabled={pending}
           aria-label={`Excluir ${product.name}`}
-          className="flex-none text-[11px] tracking-[0.1em] uppercase text-[#B0AB94] px-[6px] py-[9px] hover:text-[#C06A4A] transition-colors disabled:opacity-50"
+          title="Excluir"
+          className="flex-none inline-flex items-center gap-[6px] text-[11px] tracking-[0.1em] uppercase text-[#B0AB94] px-[6px] py-[9px] hover:text-[#C06A4A] transition-colors disabled:opacity-50"
         >
-          Excluir
+          {/* Phones: just a trash icon. ≥620px: the "Excluir" label. */}
+          <svg
+            viewBox="0 0 24 24"
+            className="w-[18px] h-[18px] min-[620px]:hidden"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6" />
+          </svg>
+          <span className="hidden min-[620px]:inline">Excluir</span>
         </button>
       </ConfirmDelete>
     </div>

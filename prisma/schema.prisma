@@ -27,6 +27,14 @@ enum ProductKind {
   CLOTHING // Roupa
 }
 
+// Shipping box a piece ships in. Dimensions per size live in
+// `src/lib/shipping.ts` (BOX_PRESETS) so freight is based only on weight + box.
+enum BoxSize {
+  P // Pequena
+  M // Média
+  G // Grande
+}
+
 model Product {
   id          String        @id @default(cuid())
   name        String
@@ -52,9 +60,12 @@ model Product {
   // Delivery estimate in days (min/max). Null = not informed.
   leadTimeMinDays Int?
   leadTimeMaxDays Int?
-  // Shipping package dimensions (Melhor Envio quote). Defaults suit a typical
-  // crochet bag; Nic can adjust per piece in the admin wizard.
+  // Shipping = weight + box size (P/M/G). The box maps to fixed dimensions in
+  // src/lib/shipping.ts (BOX_PRESETS); Nic just picks weight + box per piece.
   weightGrams Int           @default(350)
+  boxSize     BoxSize       @default(M)
+  // Legacy per-piece dimensions — no longer edited (kept so old data survives;
+  // the freight quote now derives dimensions from `boxSize`).
   heightCm    Int           @default(12)
   widthCm     Int           @default(22)
   lengthCm    Int           @default(28)

@@ -7,7 +7,7 @@ import { PRODUCTS_TAG } from "@/lib/products";
 import { slugify, reaisToCents } from "@/lib/format";
 import { validYarnIds } from "@/lib/yarn-colors";
 import { categoriesForKind, CLOTHING_SIZES, type ProductDraft } from "@/lib/product-form";
-import { DEFAULT_PACKAGE } from "@/lib/shipping";
+import { DEFAULT_WEIGHT_GRAMS, toBoxSize } from "@/lib/shipping";
 import type { ProductStatus } from "@/lib/types";
 
 export type SaveResult = { ok: boolean; error?: string };
@@ -44,8 +44,8 @@ function parseDays(raw: string): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-/** A positive whole number (grams/cm), falling back to the bag default. */
-function parseDim(raw: string, fallback: number): number {
+/** A positive whole number (grams), falling back to the default weight. */
+function parseWeight(raw: string, fallback: number): number {
   const n = parseInt(String(raw).replace(/\D/g, ""), 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
@@ -71,10 +71,8 @@ function normalize(draft: ProductDraft) {
     allowsMultipleColors: !!draft.allowsMultipleColors,
     leadTimeMinDays: parseDays(draft.leadTimeMinDays),
     leadTimeMaxDays: parseDays(draft.leadTimeMaxDays),
-    weightGrams: parseDim(draft.weightGrams, DEFAULT_PACKAGE.weightGrams),
-    heightCm: parseDim(draft.heightCm, DEFAULT_PACKAGE.heightCm),
-    widthCm: parseDim(draft.widthCm, DEFAULT_PACKAGE.widthCm),
-    lengthCm: parseDim(draft.lengthCm, DEFAULT_PACKAGE.lengthCm),
+    weightGrams: parseWeight(draft.weightGrams, DEFAULT_WEIGHT_GRAMS),
+    boxSize: toBoxSize(draft.boxSize),
     tag: draft.tag.trim() || null,
     description: draft.description.trim(),
     details: draft.detailsText

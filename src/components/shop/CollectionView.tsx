@@ -39,6 +39,9 @@ export default function CollectionView({
   return (
     <section className="relative min-h-screen px-[clamp(20px,5vw,64px)] pt-[108px] pb-[90px] bg-cream">
       <div className="max-w-shell mx-auto">
+        <div className="flex justify-center mb-8">
+          <CollectionSwitch />
+        </div>
         <div className="text-center mb-9">
           <div className="text-[12px] tracking-[0.34em] uppercase text-sage mb-[14px]">
             {eyebrow}
@@ -99,8 +102,6 @@ export default function CollectionView({
           </div>
         )}
       </div>
-
-      <CollectionSwitch />
     </section>
   );
 }

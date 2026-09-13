@@ -4,18 +4,37 @@
  * The actual ViaCEP / Melhor Envio calls live in `src/lib/melhor-envio.ts`
  * (server-only) and are orchestrated by the `calculateShipping` server action.
  */
-import type { CartItem } from "@/lib/types";
+import type { CartItem, BoxSize } from "@/lib/types";
 
-/** Default package for a typical crochet bag — mirrors the Prisma defaults. */
-export const DEFAULT_PACKAGE = {
-  weightGrams: 350,
-  heightCm: 12,
-  widthCm: 22,
-  lengthCm: 28,
-} as const;
+export type { BoxSize };
+
+/** Default weight for a typical crochet piece (grams) when none is set. */
+export const DEFAULT_WEIGHT_GRAMS = 350;
 
 /** Correios accepts no smaller than this per side (cm) — clamp to avoid API errors. */
 export const MIN_DIMENSIONS = { heightCm: 2, widthCm: 11, lengthCm: 16 } as const;
+
+/** The three shipping box sizes. Each piece ships in one of these. */
+export const BOX_SIZES: BoxSize[] = ["P", "M", "G"];
+export const DEFAULT_BOX_SIZE: BoxSize = "M";
+
+/**
+ * Box dimensions per size (cm) — the ONLY dimensions freight is based on, plus
+ * weight. Edit these to match Nic's real boxes; they must stay ≥ MIN_DIMENSIONS.
+ */
+export const BOX_PRESETS: Record<
+  BoxSize,
+  { label: string; heightCm: number; widthCm: number; lengthCm: number }
+> = {
+  P: { label: "Pequena", heightCm: 10, widthCm: 15, lengthCm: 20 },
+  M: { label: "Média", heightCm: 15, widthCm: 22, lengthCm: 30 },
+  G: { label: "Grande", heightCm: 20, widthCm: 30, lengthCm: 40 },
+};
+
+/** Normalize any string into a valid BoxSize (falls back to the default). */
+export function toBoxSize(v: string | null | undefined): BoxSize {
+  return v === "P" || v === "M" || v === "G" ? v : DEFAULT_BOX_SIZE;
+}
 
 /** How the customer receives the order: shipped, or picked up at the atelier. */
 export type DeliveryMethod = "shipping" | "pickup";

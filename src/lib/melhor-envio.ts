@@ -1,9 +1,12 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import {
-  DEFAULT_PACKAGE,
+  BOX_PRESETS,
+  DEFAULT_WEIGHT_GRAMS,
   MIN_DIMENSIONS,
   onlyDigits,
+  toBoxSize,
+  type BoxSize,
   type ShippingLineInput,
   type ShippingOption,
 } from "@/lib/shipping";
@@ -73,31 +76,24 @@ type PackageBox = {
  */
 export async function buildPackage(lines: ShippingLineInput[]): Promise<PackageBox> {
   const ids = lines.map((l) => l.productId);
-  let dims: Array<{
+  let rows: Array<{
     id: string;
     weightGrams: number;
-    heightCm: number;
-    widthCm: number;
-    lengthCm: number;
+    boxSize: BoxSize;
     priceCents: number;
   }> = [];
   try {
-    dims = await prisma.product.findMany({
+    rows = await prisma.product.findMany({
       where: { id: { in: ids } },
-      select: {
-        id: true,
-        weightGrams: true,
-        heightCm: true,
-        widthCm: true,
-        lengthCm: true,
-        priceCents: true,
-      },
+      select: { id: true, weightGrams: true, boxSize: true, priceCents: true },
     });
   } catch {
-    dims = []; // DB unreachable — fall back to defaults below.
+    rows = []; // DB unreachable — fall back to defaults below.
   }
-  const byId = new Map(dims.map((d) => [d.id, d]));
+  const byId = new Map(rows.map((d) => [d.id, d]));
 
+  // One combined package: sum weights, stack the box heights, and take the
+  // widest/longest footprint among the pieces' boxes.
   let weightGrams = 0;
   let stackedHeight = 0;
   let maxWidth: number = MIN_DIMENSIONS.widthCm;
@@ -106,17 +102,15 @@ export async function buildPackage(lines: ShippingLineInput[]): Promise<PackageB
 
   for (const line of lines) {
     const d = byId.get(line.productId);
-    const w = d?.weightGrams ?? DEFAULT_PACKAGE.weightGrams;
-    const h = d?.heightCm ?? DEFAULT_PACKAGE.heightCm;
-    const wd = d?.widthCm ?? DEFAULT_PACKAGE.widthCm;
-    const ln = d?.lengthCm ?? DEFAULT_PACKAGE.lengthCm;
+    const box = BOX_PRESETS[toBoxSize(d?.boxSize)];
+    const w = d?.weightGrams ?? DEFAULT_WEIGHT_GRAMS;
     const price = d?.priceCents ?? 0;
     const qty = Math.max(1, line.qty);
 
     weightGrams += w * qty;
-    stackedHeight += h * qty;
-    maxWidth = Math.max(maxWidth, wd);
-    maxLength = Math.max(maxLength, ln);
+    stackedHeight += box.heightCm * qty;
+    maxWidth = Math.max(maxWidth, box.widthCm);
+    maxLength = Math.max(maxLength, box.lengthCm);
     insuranceCents += price * qty;
   }
 
